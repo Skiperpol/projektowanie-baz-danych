@@ -14,7 +14,7 @@ Zakres projektu obejmuje implementację wszystkich encji i relacji widocznych na
 - Modelowanie wariantów produktów (`Variant`) – kluczowy element umożliwiający różnicowanie produktów na podstawie atrybutów (np. rozmiar, kolor).
 
 **Atrybuty Wariantów:**  
-- Definiowanie atrybutów (`Attribute`) i ich opcji (`Option`), a następnie łączenie ich z wariantami produktów (`VariantOption`).
+- Definiowanie atrybutów (`Attribute`) i ich opcji (`Option`).
 
 ## 2. Moduł Użytkowników i Interakcji
 
