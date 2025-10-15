@@ -78,4 +78,4 @@ Poniższe elementy nie są reprezentowane bezpośrednio w dostarczonym ERD i sta
 ## 3. Ograniczenia Promocji (Reguły Biznesowe)
 
 - **Łączenie Promocji:**  
-  Promocje się nie łączą. Związek między `OrderItem` (lub potencjalnie `Variant`) a `Promotion` oznacza, że dany wariant może mieć tylko jedną aktywną promocję w danym zamówieniu, co zapobiega kumulacji rabatów.
+  Promocje się nie łączą. Związek między `Variant` a `Promotion` oznacza, że dany wariant może mieć tylko jedną aktywną promocję w danym zamówieniu, co zapobiega kumulacji rabatów.
