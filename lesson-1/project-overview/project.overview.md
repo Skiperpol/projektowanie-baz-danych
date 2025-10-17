@@ -35,7 +35,7 @@ Projekt dotyczy bazy danych dla platformy e-commerce (sklepu internetowego), kon
 |--------|---------------|
 | **Użytkownicy i Relacje** | Dane osobowe i kontaktowe klienta, historia zamówień, ulubione produkty, wystawione recenzje, aktualny koszyk. |
 | **Katalog Produktów** | Nazwa, opis, producent, kategoria, atrybuty (np. materiał), dostępne egzemplarze danego wariantu. |
-| **Cennik/Promocje** | Cena podstawowa produktu/wariantów, szczegóły i okresy obowiązywania promocji. |
+| **Cennik/Promocje** | Cena podstawowa produktu/wariantów, szczegóły i okres obowiązywania promocji. |
 | **Logistyka/Zapasy** | Bieżący stan magazynowy każdego wariantu produktu, lokalizacja magazynowa (Warehouse), szczegóły dostaw. |
 | **Transakcje/Finanse** | Szczegóły zamówienia (zamówione warianty, ilości), zastosowane metody płatności i dostawy, koszty, dane rozliczeniowe, szczegóły promocji. |
 | **Informacje Zwrotne** | Treść i ocena recenzji, powiązanie recenzji z użytkownikiem i produktem. |
