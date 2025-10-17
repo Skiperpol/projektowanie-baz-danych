@@ -33,7 +33,7 @@ Zakres projektu obejmuje implementację wszystkich encji i relacji widocznych na
 - Definicja magazynów i ich lokalizacji (`Warehouse`).
 
 **Stan Magazynowy:**  
-- Śledzenie stanów magazynowych (`Stock`) dla każdego wariantu produktu w każdym magazynie.
+- Każdy egzemplarz produktu w magazynie jest ujęty w ewidencji i niezależnie śledzony (`StockItem`).
 
 ## 4. Moduł Procesowania Zamówień i Transakcji
 
@@ -41,13 +41,19 @@ Zakres projektu obejmuje implementację wszystkich encji i relacji widocznych na
 - Mechanizm koszyka (`Cart`) i pozycji w koszyku (`CartItem`), łączący użytkownika z wybranymi wariantami.
 
 **Składanie Zamówień:**  
-- Tworzenie zamówienia (`Order`), zawierającego pozycje zamówienia (`OrderItem`), które odnoszą się do konkretnych wariantów.
+- Tworzenie zamówienia (`Order`), zawierającego pozycje zamówienia (`OrderItem`), które odnoszą się do konkretnych egzemplarzy produktu w magazynie.
 
 **Metody Płatności i Dostawy:**  
 - Zapisywanie informacji o wybranej metodzie płatności (`PaymentMethod`) i dostawy (`DeliveryMethod`).
 
 **Promocje:**  
 - Możliwość zastosowania i śledzenia promocji (`Promotion`) powiązanych z zamówieniami.
+
+**Dostawy:**
+- Pojedyncze zamówienie (`Order`) może zostać rozdzielone na kilka niezależnych dostaw (przesyłek). Całe zamówienie jest powiązane z jedną metodą dostawy (`DeliveryMethod`).
+
+**Stan Zamówienia:**  
+- Zamówienia posiadają różne stany (`Status`).
 
 # Poza Zakresem Projektu
 
@@ -58,14 +64,8 @@ Poniższe elementy nie są reprezentowane bezpośrednio w dostarczonym ERD i sta
 - **Historia Płatności:**  
   System nie będzie śledził historii płatności ani częściowych płatności dla pojedynczego zamówienia. Zamówienie (`Order`) jest powiązane z jedną, finalną metodą płatności (`PaymentMethod`) i zakłada się, że płatność jest przetwarzana jednorazowo.
 
-- **Wiele Dostaw:**  
-  Pojedyncze zamówienie (`Order`) nie może zostać rozdzielone na kilka niezależnych dostaw (przesyłek). Całe zamówienie jest powiązane z jedną metodą dostawy (`DeliveryMethod`).
-
 - **Zwroty i Reklamacje:**  
   Procesowanie zwrotów, wymian, anulowań i refundacji jest poza zakresem.
-
-- **Stan Zamówienia:**  
-  Nie ma dedykowanego modelu dla rozbudowanych stanów zamówień (np. Oczekujące → W trakcie kompletowania → Wysłane).
 
 ## 2. Ograniczenia Katalogu i Atrybutów
 
