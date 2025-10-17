@@ -1,0 +1,1671 @@
+{
+  "tables": [
+    {
+      "id": "GWxjT_KJa5I47hSOLEzae",
+      "name": "StockItem",
+      "x": 748.7773027137437,
+      "y": 125.35164489465438,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "id": "9p1T3-N74AsLM9UnN5Kvn"
+        },
+        {
+          "id": "V2W3X4Y5Z6A7B8C9D0E1",
+          "name": "variant_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "X4Y5Z6A7B8C9D0E1F2G3",
+          "name": "quantity",
+          "type": "INTEGER",
+          "default": "0",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "Y5Z6A7B8C9D0E1F2G3H4",
+          "name": "shipment_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "W3X4Y5Z6A7B8C9D0E1F2",
+          "name": "warehouse_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "dRQXv2YJm1W5OTVBQmLv9",
+      "name": "Review",
+      "x": -1012.0922861720106,
+      "y": -419.2216193026753,
+      "locked": false,
+      "fields": [
+        {
+          "id": "MJGTXpcbAWaqSwMJ4AOZa",
+          "name": "user_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "VhDa_GCcIQyPHA6bx1zRa",
+          "name": "product_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "x01S6n03YbO2CWu64QNG4",
+          "name": "description",
+          "type": "TEXT",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "j8dntY2R9O27oCZMuDPQd",
+          "name": "rating",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "gAMa2J5MxUSuk64ZaDY7r",
+          "name": "posted_at",
+          "type": "TIMESTAMPTZ",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a",
+      "inherits": []
+    },
+    {
+      "id": "DPvFPt7V17b1xBImbZbYN",
+      "name": "User",
+      "x": 127.12659938686113,
+      "y": -447.31248632213925,
+      "locked": true,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "id": "Chotk9ZHkQkrVd7uuetwa",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "SK4r_dq7mu_VHGU1yBKWD",
+          "name": "first_name",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 40
+        },
+        {
+          "id": "yV8hNi9UYdJiIIHUKEcHC",
+          "name": "last_name",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 60
+        },
+        {
+          "id": "qzZM2rEJIBYMj-tzKRNHc",
+          "name": "email",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 255
+        },
+        {
+          "id": "N2LbwKniBPIGDlsWvGtXc",
+          "name": "password",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 255
+        },
+        {
+          "id": "sHZ1ME8tpWWuuDMedRy-3",
+          "name": "role",
+          "type": "ROLE_TYPE",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "qyNUGLzDACHT_PKwZpC_u",
+          "name": "address",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "comment": "",
+          "size": 255
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "ENedhnYn5HCCNB4ljGhV8",
+      "name": "Order",
+      "x": 959.5677940490353,
+      "y": -453.8574872284142,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "id": "4eOfrFyRhZ1fCi5ywVViT"
+        },
+        {
+          "id": "A1B2C3D4E5F6G7H8I9J0",
+          "name": "user_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "B2C3D4E5F6G7H8I9J0K1",
+          "name": "delivery_method_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "C3D4E5F6G7H8I9J0K1L2",
+          "name": "payment_method_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "D4E5F6G7H8I9J0K1L2M3",
+          "name": "order_date",
+          "type": "TIMESTAMPTZ",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "E5F6G7H8I9J0K1L2M3N4",
+          "name": "status_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "tUhf7krBJAe7V1nUyJ_2X",
+          "name": "billing_address",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 255
+        },
+        {
+          "id": "wyZgXW_cqOt4M1qvZsuNE",
+          "name": "shipping_address",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 255
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "14bglf4-wLpveuFV6gxlk",
+      "name": "DeliveryMethod",
+      "x": 1504.3937335885103,
+      "y": -499.7098124847392,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "id": "6tDDcZZDPNslLLADO5zL6"
+        },
+        {
+          "id": "F6G7H8I9J0K1L2M3N4O5",
+          "name": "name",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": true,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 100
+        },
+        {
+          "id": "G7H8I9J0K1L2M3N4O5P6",
+          "name": "cost",
+          "type": "DECIMAL",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "Y_3VAzb3TJL5Mapf_RCIN",
+      "name": "PaymentMethod",
+      "x": 1489.085846579655,
+      "y": -222.87536541030317,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "id": "bIOlKJwdYRFaDXnvV6Eft"
+        },
+        {
+          "id": "H8I9J0K1L2M3N4O5P6Q7",
+          "name": "name",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": true,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 100
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "8gOTp0VOAovO_kfs6Ij9e",
+      "name": "Shipment",
+      "x": 1349.1500669599493,
+      "y": 15.689436072540218,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "id": "YI7yZDgYV5ohtlinMBmRQ"
+        },
+        {
+          "id": "J0K1L2M3N4O5P6Q7R8S9",
+          "name": "order_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "K1L2M3N4O5P6Q7R8S9T0",
+          "name": "tracking_number",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": true,
+          "notNull": false,
+          "increment": false,
+          "comment": "",
+          "size": 100
+        },
+        {
+          "id": "L2M3N4O5P6Q7R8S9T0U1",
+          "name": "shipped_at",
+          "type": "TIMESTAMPTZ",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "6Z0aTuJyIe-eBsJvma4eS",
+      "name": "OrderItem",
+      "x": 509.2955945284091,
+      "y": -223.0913824786407,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "id": "h2oW00po37_4J-L6pKfm1"
+        },
+        {
+          "id": "M3N4O5P6Q7R8S9T0U1V2",
+          "name": "order_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "N4O5P6Q7R8S9T0U1V2W3",
+          "name": "stock_item_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "P6Q7R8S9T0U1V2W3X4Y5",
+          "name": "quantity",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "Q7R8S9T0U1V2W3X4Y5Z6",
+          "name": "unit_price",
+          "type": "DECIMAL",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "igfhd0MkDytOYOaIbCXF9",
+      "name": "Variant",
+      "x": 114.13248225482585,
+      "y": 303.82414489519687,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "id": "9Qkkk8DFJdXJaP_0yPnN_"
+        },
+        {
+          "id": "R8S9T0U1V2W3X4Y5Z6A7",
+          "name": "product_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "S9T0U1V2W3X4Y5Z6A7B8",
+          "name": "sku",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": true,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 50
+        },
+        {
+          "id": "T0U1V2W3X4Y5Z6A7B8C9",
+          "name": "price_modifier",
+          "type": "DECIMAL",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "U1V2W3X4Y5Z6A7B8C9D0",
+          "name": "promotion_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "comment": ""
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "Pp3OPKkWH71-FyLeDSJEb",
+      "name": "Warehouse",
+      "x": 1497.128542282181,
+      "y": 271.2109068364036,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "id": "Dz5husXgqRMqHCanpRIfu"
+        },
+        {
+          "id": "Z6A7B8C9D0E1F2G3H4I5",
+          "name": "name",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": true,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 100
+        },
+        {
+          "id": "A7B8C9D0E1F2G3H4I5J6",
+          "name": "address",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 255
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "kKndbSu1R9tu-z6yS2bAe",
+      "name": "Promotion",
+      "x": 792.3576100339208,
+      "y": 494.0375180276496,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "id": "EP3dpWRZjOuWAb7eCrucC"
+        },
+        {
+          "id": "B8C9D0E1F2G3H4I5J6K7",
+          "name": "name",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 100
+        },
+        {
+          "id": "D0E1F2G3H4I5J6K7L8M9",
+          "name": "discount_percentage",
+          "type": "DECIMAL",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "E1F2G3H4I5J6K7L8M9N0",
+          "name": "start_date",
+          "type": "TIMESTAMPTZ",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "F2G3H4I5J6K7L8M9N0O1",
+          "name": "end_date",
+          "type": "TIMESTAMPTZ",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "kPP5jaCF8XL2FMtfzVVHP",
+      "name": "Option",
+      "x": 16.669422238301422,
+      "y": 596.2202183229666,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "id": "iGHclBwqTuVuXKRTu9Jit"
+        },
+        {
+          "id": "G3H4I5J6K7L8M9N0O1P2",
+          "name": "attribute_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "H4I5J6K7L8M9N0O1P2Q3",
+          "name": "value",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 100
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "6zRF5Y2q3y_mVolHR8kO2",
+      "name": "Attribute",
+      "x": -397.6153286918933,
+      "y": 631.0557330431599,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "id": "N065oFGz7KN-sPMZb-E1x"
+        },
+        {
+          "id": "I5J6K7L8M9N0O1P2Q3R4",
+          "name": "name",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": true,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 100
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "GTgwUlngVZQ0GQMLBdROS",
+      "name": "Manufacturer",
+      "x": -1137.1489770343958,
+      "y": -103.46812603220054,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "id": "NVBv3N5nqNpUnFAIOopHQ"
+        },
+        {
+          "id": "J6K7L8M9N0O1P2Q3R4S5",
+          "name": "name",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": true,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 100
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "kas-utndF7qqDX6xSdx7I",
+      "name": "Category",
+      "x": -722.11348317545,
+      "y": 273.323133927776,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "id": "fC5P_xfUh2hVUfhm-jpvP",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "C1B1EG0Txpamrn4hZhmVo",
+          "name": "name",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 255
+        },
+        {
+          "id": "HS9CGzRUZ0QPVkbW_4Nit",
+          "name": "parent_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "N_c1uWIVdUeaI6pOIJI-q",
+      "name": "Product",
+      "x": -703.1444834318286,
+      "y": -135.85410573988293,
+      "locked": true,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "id": "8nQbDOryD5OUevYdS26QT",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "NQtTQvdwvWzSm3AyVxfDI",
+          "name": "manufacturer_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "SjM3xgZ7WUpo6kJlTV5ha",
+          "name": "name",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 255
+        },
+        {
+          "id": "h7eBGc3EFhiAArowc45g3",
+          "name": "description",
+          "type": "TEXT",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "kSdikyhDWMjpWo3nkcpN-",
+          "name": "price",
+          "type": "DECIMAL",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "comment": ""
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "j18jlpP4EcUx_E6lCKK75",
+      "name": "FavoriteProduct",
+      "x": -186.96575369845425,
+      "y": -204.94261009847077,
+      "locked": false,
+      "fields": [
+        {
+          "id": "K7L8M9N0O1P2Q3R4S5T6",
+          "name": "user_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "L8M9N0O1P2Q3R4S5T6U7",
+          "name": "product_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "I2gsqs3KPUHFwUs0PcsLh",
+      "name": "Cart",
+      "x": 131.14739664710675,
+      "y": -98.46825482044648,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "id": "dBmB7gFl7t7xreWlJS5R3"
+        },
+        {
+          "id": "N0O1P2Q3R4S5T6U7V8W9",
+          "name": "user_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": true,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "O1P2Q3R4S5T6U7V8W9X0",
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "0JeDTkd-dYaslVM4pU-rM",
+      "name": "CartItem",
+      "x": 119.39203363932091,
+      "y": 86.05339373922936,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "id": "PM-3_vOoJykkIuw7Ky1Sv"
+        },
+        {
+          "id": "P2Q3R4S5T6U7V8W9X0Y1",
+          "name": "cart_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "Q3R4S5T6U7V8W9X0Y1Z2",
+          "name": "variant_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "R4S5T6U7V8W9X0Y1Z2A3",
+          "name": "quantity",
+          "type": "INTEGER",
+          "default": "1",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "XkYwfjM7-s1fWcsjnTDk0",
+      "name": "ProductCategory",
+      "x": -715.1247978976114,
+      "y": 110.81889312221173,
+      "locked": false,
+      "fields": [
+        {
+          "name": "product_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "id": "Ge1uY4uidf2IBorzXcIPe",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "Wst_kmCIt5wEzGXF0Ynsd",
+          "name": "category_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "rokwUyy2eJHWT82QthyJl",
+      "name": "ProductAttribute",
+      "x": -394.14227970425287,
+      "y": 483.34467797941556,
+      "locked": false,
+      "fields": [
+        {
+          "id": "S5T6U7V8W9X0Y1Z2A3B4",
+          "name": "product_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "T6U7V8W9X0Y1Z2A3B4C5",
+          "name": "attribute_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "XpRLR1KqZL0K5GeISZ5Ns",
+      "name": "VariantOption",
+      "x": 386.4335169632195,
+      "y": 606.4846815393715,
+      "locked": false,
+      "fields": [
+        {
+          "id": "U7V8W9X0Y1Z2A3B4C5D6",
+          "name": "variant_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        },
+        {
+          "id": "V8W9X0Y1Z2A3B4C5D6E7",
+          "name": "option_id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": ""
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    },
+    {
+      "id": "JRzkpUYPB7LefDbfifm6Q",
+      "name": "Status",
+      "x": 615.5447210027327,
+      "y": -550.4445302604439,
+      "locked": false,
+      "fields": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "increment": true,
+          "comment": "",
+          "id": "5WuntPNcm_fBHXuBFFyjk"
+        },
+        {
+          "id": "xnIQy4m_wmCPBJWmik5-j",
+          "name": "name",
+          "type": "VARCHAR",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": 255
+        }
+      ],
+      "comment": "",
+      "indices": [],
+      "color": "#175e7a"
+    }
+  ],
+  "relationships": [
+    {
+      "startTableId": "Pp3OPKkWH71-FyLeDSJEb",
+      "startFieldId": "Dz5husXgqRMqHCanpRIfu",
+      "endTableId": "GWxjT_KJa5I47hSOLEzae",
+      "endFieldId": "W3X4Y5Z6A7B8C9D0E1F2",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "Y8Z9A0B1C2D3E4F5G6H7"
+    },
+    {
+      "startTableId": "igfhd0MkDytOYOaIbCXF9",
+      "startFieldId": "9Qkkk8DFJdXJaP_0yPnN_",
+      "endTableId": "GWxjT_KJa5I47hSOLEzae",
+      "endFieldId": "V2W3X4Y5Z6A7B8C9D0E1",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "X7Y8Z9A0B1C2D3E4F5G6"
+    },
+    {
+      "startTableId": "dRQXv2YJm1W5OTVBQmLv9",
+      "startFieldId": "MJGTXpcbAWaqSwMJ4AOZa",
+      "endTableId": "DPvFPt7V17b1xBImbZbYN",
+      "endFieldId": "Chotk9ZHkQkrVd7uuetwa",
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "-b1e00In7ONeecgAnXHo9"
+    },
+    {
+      "startTableId": "N_c1uWIVdUeaI6pOIJI-q",
+      "startFieldId": "8nQbDOryD5OUevYdS26QT",
+      "endTableId": "dRQXv2YJm1W5OTVBQmLv9",
+      "endFieldId": "VhDa_GCcIQyPHA6bx1zRa",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "gRIxycolSP5VHFzd_IzhS"
+    },
+    {
+      "startTableId": "XkYwfjM7-s1fWcsjnTDk0",
+      "startFieldId": "Ge1uY4uidf2IBorzXcIPe",
+      "endTableId": "N_c1uWIVdUeaI6pOIJI-q",
+      "endFieldId": "8nQbDOryD5OUevYdS26QT",
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "nAVKWWvvQvj2w3fuKvKCM"
+    },
+    {
+      "startTableId": "XkYwfjM7-s1fWcsjnTDk0",
+      "startFieldId": "Wst_kmCIt5wEzGXF0Ynsd",
+      "endTableId": "kas-utndF7qqDX6xSdx7I",
+      "endFieldId": "fC5P_xfUh2hVUfhm-jpvP",
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "OBoe4AWVnuU26mYFeAtY7"
+    },
+    {
+      "startTableId": "DPvFPt7V17b1xBImbZbYN",
+      "startFieldId": "Chotk9ZHkQkrVd7uuetwa",
+      "endTableId": "ENedhnYn5HCCNB4ljGhV8",
+      "endFieldId": "A1B2C3D4E5F6G7H8I9J0",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "R1S2T3U4V5W6X7Y8Z9A0"
+    },
+    {
+      "startTableId": "14bglf4-wLpveuFV6gxlk",
+      "startFieldId": "6tDDcZZDPNslLLADO5zL6",
+      "endTableId": "ENedhnYn5HCCNB4ljGhV8",
+      "endFieldId": "B2C3D4E5F6G7H8I9J0K1",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "S2T3U4V5W6X7Y8Z9A0B1"
+    },
+    {
+      "startTableId": "Y_3VAzb3TJL5Mapf_RCIN",
+      "startFieldId": "bIOlKJwdYRFaDXnvV6Eft",
+      "endTableId": "ENedhnYn5HCCNB4ljGhV8",
+      "endFieldId": "C3D4E5F6G7H8I9J0K1L2",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "T3U4V5W6X7Y8Z9A0B1C2"
+    },
+    {
+      "startTableId": "ENedhnYn5HCCNB4ljGhV8",
+      "startFieldId": "4eOfrFyRhZ1fCi5ywVViT",
+      "endTableId": "6Z0aTuJyIe-eBsJvma4eS",
+      "endFieldId": "M3N4O5P6Q7R8S9T0U1V2",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "U4V5W6X7Y8Z9A0B1C2D3"
+    },
+    {
+      "startTableId": "DPvFPt7V17b1xBImbZbYN",
+      "startFieldId": "Chotk9ZHkQkrVd7uuetwa",
+      "endTableId": "I2gsqs3KPUHFwUs0PcsLh",
+      "endFieldId": "N0O1P2Q3R4S5T6U7V8W9",
+      "cardinality": "one_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "Z9A0B1C2D3E4F5G6H7I8"
+    },
+    {
+      "startTableId": "I2gsqs3KPUHFwUs0PcsLh",
+      "startFieldId": "dBmB7gFl7t7xreWlJS5R3",
+      "endTableId": "0JeDTkd-dYaslVM4pU-rM",
+      "endFieldId": "P2Q3R4S5T6U7V8W9X0Y1",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "A0B1C2D3E4F5G6H7I8J9"
+    },
+    {
+      "startTableId": "igfhd0MkDytOYOaIbCXF9",
+      "startFieldId": "9Qkkk8DFJdXJaP_0yPnN_",
+      "endTableId": "0JeDTkd-dYaslVM4pU-rM",
+      "endFieldId": "Q3R4S5T6U7V8W9X0Y1Z2",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "B1C2D3E4F5G6H7I8J9K0"
+    },
+    {
+      "startTableId": "igfhd0MkDytOYOaIbCXF9",
+      "startFieldId": "9Qkkk8DFJdXJaP_0yPnN_",
+      "endTableId": "XpRLR1KqZL0K5GeISZ5Ns",
+      "endFieldId": "U7V8W9X0Y1Z2A3B4C5D6",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "C2D3E4F5G6H7I8J9K0L1"
+    },
+    {
+      "startTableId": "kPP5jaCF8XL2FMtfzVVHP",
+      "startFieldId": "iGHclBwqTuVuXKRTu9Jit",
+      "endTableId": "XpRLR1KqZL0K5GeISZ5Ns",
+      "endFieldId": "V8W9X0Y1Z2A3B4C5D6E7",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "D3E4F5G6H7I8J9K0L1M2"
+    },
+    {
+      "startTableId": "kKndbSu1R9tu-z6yS2bAe",
+      "startFieldId": "EP3dpWRZjOuWAb7eCrucC",
+      "endTableId": "igfhd0MkDytOYOaIbCXF9",
+      "endFieldId": "U1V2W3X4Y5Z6A7B8C9D0",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "E4F5G6H7I8J9K0L1M2N3"
+    },
+    {
+      "startTableId": "6zRF5Y2q3y_mVolHR8kO2",
+      "startFieldId": "N065oFGz7KN-sPMZb-E1x",
+      "endTableId": "kPP5jaCF8XL2FMtfzVVHP",
+      "endFieldId": "G3H4I5J6K7L8M9N0O1P2",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "F5G6H7I8J9K0L1M2N3O4"
+    },
+    {
+      "startTableId": "DPvFPt7V17b1xBImbZbYN",
+      "startFieldId": "Chotk9ZHkQkrVd7uuetwa",
+      "endTableId": "j18jlpP4EcUx_E6lCKK75",
+      "endFieldId": "K7L8M9N0O1P2Q3R4S5T6",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "G6H7I8J9K0L1M2N3O4P5"
+    },
+    {
+      "startTableId": "N_c1uWIVdUeaI6pOIJI-q",
+      "startFieldId": "8nQbDOryD5OUevYdS26QT",
+      "endTableId": "j18jlpP4EcUx_E6lCKK75",
+      "endFieldId": "L8M9N0O1P2Q3R4S5T6U7",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "H7I8J9K0L1M2N3O4P5Q6"
+    },
+    {
+      "startTableId": "N_c1uWIVdUeaI6pOIJI-q",
+      "startFieldId": "8nQbDOryD5OUevYdS26QT",
+      "endTableId": "rokwUyy2eJHWT82QthyJl",
+      "endFieldId": "S5T6U7V8W9X0Y1Z2A3B4",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "I8J9K0L1M2N3O4P5Q6R7"
+    },
+    {
+      "startTableId": "6zRF5Y2q3y_mVolHR8kO2",
+      "startFieldId": "N065oFGz7KN-sPMZb-E1x",
+      "endTableId": "rokwUyy2eJHWT82QthyJl",
+      "endFieldId": "T6U7V8W9X0Y1Z2A3B4C5",
+      "cardinality": "one_to_many",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "J9K0L1M2N3O4P5Q6R7S8"
+    },
+    {
+      "startTableId": "N_c1uWIVdUeaI6pOIJI-q",
+      "startFieldId": "NQtTQvdwvWzSm3AyVxfDI",
+      "endTableId": "GTgwUlngVZQ0GQMLBdROS",
+      "endFieldId": "NVBv3N5nqNpUnFAIOopHQ",
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "N_nH0XHVOw_7BP5ujp2S8"
+    },
+    {
+      "startTableId": "igfhd0MkDytOYOaIbCXF9",
+      "startFieldId": "R8S9T0U1V2W3X4Y5Z6A7",
+      "endTableId": "N_c1uWIVdUeaI6pOIJI-q",
+      "endFieldId": "8nQbDOryD5OUevYdS26QT",
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "CqaFdvykyKqnXUGDhadkO"
+    },
+    {
+      "startTableId": "6Z0aTuJyIe-eBsJvma4eS",
+      "startFieldId": "N4O5P6Q7R8S9T0U1V2W3",
+      "endTableId": "GWxjT_KJa5I47hSOLEzae",
+      "endFieldId": "9p1T3-N74AsLM9UnN5Kvn",
+      "cardinality": "one_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "4wqdOXC8zcEdF9oV41qAB"
+    },
+    {
+      "startTableId": "GWxjT_KJa5I47hSOLEzae",
+      "startFieldId": "Y5Z6A7B8C9D0E1F2G3H4",
+      "endTableId": "8gOTp0VOAovO_kfs6Ij9e",
+      "endFieldId": "YI7yZDgYV5ohtlinMBmRQ",
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "j7ACaBtSbzkjT1i7HIUaY"
+    },
+    {
+      "startTableId": "8gOTp0VOAovO_kfs6Ij9e",
+      "startFieldId": "J0K1L2M3N4O5P6Q7R8S9",
+      "endTableId": "ENedhnYn5HCCNB4ljGhV8",
+      "endFieldId": "4eOfrFyRhZ1fCi5ywVViT",
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "yinDKrc5k0Vy6yOjwxXrb"
+    },
+    {
+      "startTableId": "ENedhnYn5HCCNB4ljGhV8",
+      "startFieldId": "E5F6G7H8I9J0K1L2M3N4",
+      "endTableId": "JRzkpUYPB7LefDbfifm6Q",
+      "endFieldId": "5WuntPNcm_fBHXuBFFyjk",
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "name": "",
+      "id": "eJ2S0TTm2BNOJA9_XMTQG"
+    }
+  ],
+  "notes": [],
+  "subjectAreas": [],
+  "database": "postgresql",
+  "types": [
+    {
+      "name": "role_type",
+      "fields": [
+        {
+          "name": "user",
+          "type": "VARCHAR",
+          "size": 255
+        },
+        {
+          "name": "admin",
+          "type": "VARCHAR",
+          "size": 255
+        },
+        {
+          "name": " warehouseman",
+          "type": "VARCHAR",
+          "size": 255
+        },
+        {
+          "name": "editor",
+          "type": "VARCHAR",
+          "size": 255
+        }
+      ],
+      "comment": ""
+    }
+  ],
+  "enums": [],
+  "title": "Untitled Diagram"
+}
