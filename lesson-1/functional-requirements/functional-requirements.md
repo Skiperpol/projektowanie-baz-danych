@@ -5,10 +5,10 @@
 ### 1.1 Rejestracja i logowanie
 
 - System umożliwia tworzenie nowych kont użytkowników poprzez formularz rejestracyjny.  
-- Logowanie odbywa się na podstawie unikalnego adresu e-mail (lub loginu) i hasła.  
+- Logowanie odbywa się na podstawie unikalnego adresu e-mail i hasła.  
 - Hasła muszą być przechowywane w sposób zaszyfrowany.  
-- System zapewnia mechanizm odzyskiwania hasła.  
-- Po pomyślnym logowaniu użytkownik otrzymuje sesję autoryzacyjną (token/ID sesji).  
+- System umożliwia mechanizm odzyskiwania hasła.  
+- Po zalogowaniu użytkownik otrzymuje token sesyjny/autoryzacyjny.
 
 ### 1.2 Role i poziomy dostępu
 
@@ -33,15 +33,16 @@ System definiuje cztery główne poziomy dostępu:
 ### 2.1 Produkty
 - System umożliwia tworzenie, edycję, usuwanie i przeglądanie produktów.  
 - Każdy produkt musi należeć przynajmniej do jednej kategorii i musi mieć przypisanego jednego producenta.   
-- System umożliwia wyszukiwanie produktów po nazwie, kategorii, producencie i cenie.  
+- System umożliwia wyszukiwanie produktów po nazwie, kategorii, producencie i cenie.
+- Produkty są powiązane z atrybutami (np. kolor).  
 
 ### 2.2 Kategorie i producenci  
 - Produkt może być przypisany do wielu kategorii.  
-- Producent jest powiązany relacją 1:N z produktami.  
+- Producent może posiadać wiele produktów, ale produkt może mieć tylko jednego producenta.  
 
 ### 2.3 Warianty produktów
 - System umożliwia definiowanie wariantów (np. kolor, rozmiar, pojemność).  
-- Każdy wariant posiada własny stan magazynowy i może mieć osobną cenę/promocję.  
+- Każdy wariant posiada własny stan magazynowy w postaci 'StockItem' i może mieć osobną cenę/promocję.  
 - Warianty są powiązane z atrybutami i opcjami (np. kolor: czerwony).  
 
 ---
@@ -49,11 +50,12 @@ System definiuje cztery główne poziomy dostępu:
 ## 3. Zarządzanie Zamówieniami i Koszykiem
 
 ### 3.1 Koszyk zakupowy
-- Każdy zalogowany użytkownik może posiadać jeden aktywny koszyk.  
+- Każdy zalogowany użytkownik może posiadać jeden aktywny koszyk.
+- Koszyk zawiera pozycję 'CartItem', odnoszące się do konkretnego wariantu
 - Do koszyka można dodawać i usuwać warianty produktów.  
-- System aktualizuje wartość koszyka po każdej zmianie.  
-- Dla każdego wariantu system sprawdza dostępność w magazynie.  
-
+- System aktualizuje wartość koszyka po każdej zmianie.
+- Dostępność wariantu jest weryfikowana w tabeli 'StockItem'.
+  
 ### 3.2 Składanie zamówienia
 - Użytkownik może złożyć zamówienie na podstawie zawartości koszyka.  
 - System wymaga podania metody płatności i dostawy.  
@@ -62,8 +64,10 @@ System definiuje cztery główne poziomy dostępu:
 
 ### 3.3 Płatność i dostawa
 - Każde zamówienie jest powiązane z jedną metodą płatności i jedną metodą dostawy.  
-- System nie obsługuje wielu płatności lub dostaw dla jednego zamówienia.  
-- Płatność i dostawa są wybierane z listy dostępnych opcji.  
+- System nie obsługuje wielu płatności dla jednego zamówienia.
+- Dla każdej metody dostawy określony jest koszt.
+- Płatność i dostawa są wybierane z listy dostępnych opcji.
+- Dla jednego zamówienia może być wiele przesyłek.
 
 ---
 
@@ -84,11 +88,11 @@ System definiuje cztery główne poziomy dostępu:
 
 ---
 
-## 6. Zarządzanie Magazynem i Stanami
+## 6. Zarządzanie Magazynem, Stanami i Wysyłkami
 - System umożliwia definiowanie wielu magazynów.   
-- Stan magazynowy aktualizuje się automatycznie po złożeniu zamówienia.  
-- Pracownik magazynu może ręcznie zmieniać ilości (np. korekty).  
-- Nie jest śledzona historia zmian stanów.  
+- Po utworzeniu wysyłki aktualizowany jest stan magazynowy. 
+- Pracownik magazynu może ręcznie zmieniać ilości (np. korekty).
+- Każda wysyłka jest powiązana z jednym zamówieniem.
 
 ---
 
