@@ -13,7 +13,7 @@ Projekt dotyczy bazy danych dla platformy e-commerce (sklepu internetowego), kon
 - Definiowanie produktów, ich kategorii, producentów i atrybutów/wariantów.
 
 ### Obsługa Wariantów Produktów
-- Umożliwienie, aby jeden produkt miał wiele wariantów (np. różne rozmiary, kolory), każdy z własnym stanem magazynowym.
+- Umożliwienie, aby jeden produkt miał wiele wariantów (np. różne rozmiary, kolory), z możliwością śledzenia egzemplarzy w magazynach.
 
 ### Proces Zakupowy
 - Obsługa koszyka zakupowego, dodawania do ulubionych.
@@ -22,7 +22,7 @@ Projekt dotyczy bazy danych dla platformy e-commerce (sklepu internetowego), kon
 - Proces składania zamówienia, uwzględniający metody dostawy, płatności oraz promocje.
 
 ### Zarządzanie Magazynem i Zapasy
-- Śledzenie stanów magazynowych w różnych magazynach.
+- Śledzenie dostępnych egzemplarzy w różnych magazynach.
 
 ### Recenzje Produktów
 - Umożliwienie użytkownikom oceniania i recenzowania produktów.
@@ -34,8 +34,8 @@ Projekt dotyczy bazy danych dla platformy e-commerce (sklepu internetowego), kon
 | Obszar | Kluczowe Dane |
 |--------|---------------|
 | **Użytkownicy i Relacje** | Dane osobowe i kontaktowe klienta, historia zamówień, ulubione produkty, wystawione recenzje, aktualny koszyk. |
-| **Katalog Produktów** | Nazwa, opis, producent, kategoria, atrybuty (np. materiał), dostępne warianty. |
-| **Cennik/Promocje** | Cena podstawowa produktu/wariantów, szczegóły i warunki zastosowania promocji. |
+| **Katalog Produktów** | Nazwa, opis, producent, kategoria, atrybuty (np. materiał), dostępne egzemplarze danego wariantu. |
+| **Cennik/Promocje** | Cena podstawowa produktu/wariantów, szczegóły i okres obowiązywania promocji. |
 | **Logistyka/Zapasy** | Bieżący stan magazynowy każdego wariantu produktu, lokalizacja magazynowa (Warehouse), szczegóły dostaw. |
 | **Transakcje/Finanse** | Szczegóły zamówienia (zamówione warianty, ilości), zastosowane metody płatności i dostawy, koszty, dane rozliczeniowe, szczegóły promocji. |
 | **Informacje Zwrotne** | Treść i ocena recenzji, powiązanie recenzji z użytkownikiem i produktem. |
