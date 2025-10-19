@@ -16,14 +16,14 @@ User(<u>id</u>, first_name, last_name, email, password, role, <i>address_id</i>)
 
 ## **2. Address**
 
-Address(<u>id</u>, street, city, postal_code, country, created_at, updated_at)
+Address(<u>id</u>, street, city, postal_code, country)
 
 
 **Klucz główny:** `id`  
 **Klucze obce:** brak
 
 **Zależności funkcyjne:**
-- `id → street, city, postal_code, country, created_at, updated_at`
+- `id → street, city, postal_code, country`
 
 **Zależności wielowartościowe:** ∅
 
@@ -117,14 +117,14 @@ OrderItem(<u>id</u>, <i>order_id</i>, <i>stock_item_id</i>, unit_price)
 
 ## **8. Cart**
 
-Cart(<u>id</u>, <i>user_id</i>, created_at)
+Cart(<u>id</u>, <i>user_id</i>)
 
 
 **Klucz główny:** `id`  
 **Klucze obce:** `user_id` → `User(id)`
 
 **Zależności funkcyjne:**
-- `id → user_id, created_at`
+- `id → user_id`
 - `user_id → id` (relacja 1:1, każdy user ma jeden koszyk)
 
 **Zależności wielowartościowe:** ∅
@@ -133,7 +133,7 @@ Cart(<u>id</u>, <i>user_id</i>, created_at)
 
 ## **9. CartItem**
 
-CartItem(<u>id</u>, <i>cart_id</i>, <i>variant_id</i>)
+CartItem(<u>id</u>, <i>cart_id</i>, <i>variant_id</i>, quantity)
 
 
 **Klucz główny:** `id`  
@@ -142,7 +142,7 @@ CartItem(<u>id</u>, <i>cart_id</i>, <i>variant_id</i>)
 - `variant_id` → `Variant(id)`
 
 **Zależności funkcyjne:**
-- `id → cart_id, variant_id`
+- `id → cart_id, variant_id, quantity`
 
 **Zależności wielowartościowe:** ∅
 
@@ -380,9 +380,9 @@ Review(<u><i>user_id</i>, <i>product_id</i></u>, description, rating, posted_at)
 ---
 
 ## **24. FavoriteProduct**
-```
+
 FavoriteProduct(<u><i>user_id</i>, <i>product_id</i></u>)
-```
+
 
 **Klucz główny:** `(user_id, product_id)`  
 **Klucze obce:**

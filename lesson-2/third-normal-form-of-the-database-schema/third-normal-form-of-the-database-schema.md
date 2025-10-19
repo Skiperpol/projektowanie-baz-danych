@@ -84,7 +84,7 @@ PaymentMethod(<u>id</u>, name)
 
 ## **7. OrderItem**
 
-OrderItem(<u>id</u>, <i>order_id</i>, <i>stock_item_id</i>, quantity, unit_price)
+OrderItem(<u>id</u>, <i>order_id</i>, <i>stock_item_id</i>, unit_price)
 
 
 **Sprawdzenie:**
@@ -98,7 +98,7 @@ OrderItem(<u>id</u>, <i>order_id</i>, <i>stock_item_id</i>, quantity, unit_price
 
 ## **8. Cart**
 
-Cart(<u>id</u>, <i>user_id</i>, created_at)
+Cart(<u>id</u>, <i>user_id</i>)
 
 
 **Sprawdzenie:**
@@ -268,17 +268,15 @@ VariantOption(<u><i>variant_id</i>, <i>option_id</i></u>)
 
 ## **20. Warehouse**
 
-Warehouse(<u>id</u>, name, address)
+Warehouse(<u>id</u>, name, address_id)
 
 
 **Sprawdzenie:**
-- **1NF**: Wszystkie atrybuty są atomowe (address jako VARCHAR jest atomowy)
+- **1NF**: Wszystkie atrybuty są atomowe
 - **2NF**: Klucz główny jest pojedynczy
 - **3NF**: Brak zależności przechodnich
 
 **Wniosek:** Schemat jest w **3NF**, nie wymaga dekompozycji.
-
-**Uwaga:** Gdybyśmy chcieli bardziej znormalizować, moglibyśmy rozbić `address` na osobną tabelę (jak w przypadku User i Order), ale to nie jest wymagane dla 3NF.
 
 ---
 
@@ -327,20 +325,14 @@ Review(<u><i>user_id</i>, <i>product_id</i></u>, description, rating, posted_at)
 ---
 
 ## **24. FavoriteProduct**
-```
+
 FavoriteProduct(<u><i>user_id</i>, <i>product_id</i></u>)
-```
 
-**Klucz główny:** `(user_id, product_id)`  
-**Klucze obce:**
-- `user_id` → `User(id)`
-- `product_id` → `Product(id)`
+**Sprawdzenie:**
+- **1NF**: Wszystkie atrybuty są atomowe
+- **2NF**: Wszystkie atrybuty niekluczowe zależą od całego klucza złożonego
+- **3NF**: Brak zależności przechodnich
 
-**Zależności funkcyjne:**
-- `(user_id, product_id) → ∅`
-
-**Zależności wielowartościowe:**
-- `user_id →→ product_id` (użytkownik może mieć wiele ulubionych produktów)
-- `product_id →→ user_id` (produkt może być ulubiony u wielu użytkowników)
+**Wniosek:** Schemat jest w **3NF**, nie wymaga dekompozycji.
 
 ---
