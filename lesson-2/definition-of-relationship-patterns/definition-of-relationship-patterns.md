@@ -99,7 +99,7 @@ PaymentMethod(<u>id</u>, name)
 
 ## **7. OrderItem**
 
-OrderItem(<u>id</u>, <i>order_id</i>, <i>stock_item_id</i>, quantity, unit_price)
+OrderItem(<u>id</u>, <i>order_id</i>, <i>stock_item_id</i>, unit_price)
 
 
 **Klucz główny:** `id`  
@@ -108,7 +108,8 @@ OrderItem(<u>id</u>, <i>order_id</i>, <i>stock_item_id</i>, quantity, unit_price
 - `stock_item_id` → `StockItem(id)`
 
 **Zależności funkcyjne:**
-- `id → order_id, stock_item_id, quantity, unit_price`
+- `id → order_id, stock_item_id, unit_price`
+- `stock_item_id → id` (każda sprzedana sztuka jest przypisana do jednej linii zamówienia)
 
 **Zależności wielowartościowe:** ∅
 
@@ -132,7 +133,7 @@ Cart(<u>id</u>, <i>user_id</i>, created_at)
 
 ## **9. CartItem**
 
-CartItem(<u>id</u>, <i>cart_id</i>, <i>variant_id</i>, quantity)
+CartItem(<u>id</u>, <i>cart_id</i>, <i>variant_id</i>)
 
 
 **Klucz główny:** `id`  
@@ -141,7 +142,7 @@ CartItem(<u>id</u>, <i>cart_id</i>, <i>variant_id</i>, quantity)
 - `variant_id` → `Variant(id)`
 
 **Zależności funkcyjne:**
-- `id → cart_id, variant_id, quantity`
+- `id → cart_id, variant_id`
 
 **Zależności wielowartościowe:** ∅
 
@@ -314,14 +315,14 @@ VariantOption(<u><i>variant_id</i>, <i>option_id</i></u>)
 
 ## **20. Warehouse**
 
-Warehouse(<u>id</u>, name, address)
+Warehouse(<u>id</u>, name, <i>address_id</i>)
 
 
 **Klucz główny:** `id`  
-**Klucze obce:** brak
+**Klucze obce:** `address_id` → `Address(id)`
 
 **Zależności funkcyjne:**
-- `id → name, address`
+- `id → name, address_id`
 
 **Zależności wielowartościowe:** ∅
 
@@ -329,7 +330,7 @@ Warehouse(<u>id</u>, name, address)
 
 ## **21. StockItem**
 
-StockItem(<u>id</u>, <i>variant_id</i>, quantity, <i>shipment_id</i>, <i>warehouse_id</i>)
+StockItem(<u>id</u>, <i>variant_id</i>, <i>shipment_id</i>, <i>warehouse_id</i>)
 
 
 **Klucz główny:** `id`  
@@ -339,7 +340,7 @@ StockItem(<u>id</u>, <i>variant_id</i>, quantity, <i>shipment_id</i>, <i>warehou
 - `warehouse_id` → `Warehouse(id)`
 
 **Zależności funkcyjne:**
-- `id → variant_id, quantity, shipment_id, warehouse_id`
+- `id → variant_id, shipment_id, warehouse_id`
 
 **Zależności wielowartościowe:** ∅
 
@@ -379,10 +380,11 @@ Review(<u><i>user_id</i>, <i>product_id</i></u>, description, rating, posted_at)
 ---
 
 ## **24. FavoriteProduct**
-
+```
 FavoriteProduct(<u><i>user_id</i>, <i>product_id</i></u>)
+```
 
-**Klucz główny:** `(user_id, product_id)` - klucz złożony  
+**Klucz główny:** `(user_id, product_id)`  
 **Klucze obce:**
 - `user_id` → `User(id)`
 - `product_id` → `Product(id)`
@@ -390,6 +392,8 @@ FavoriteProduct(<u><i>user_id</i>, <i>product_id</i></u>)
 **Zależności funkcyjne:**
 - `(user_id, product_id) → ∅`
 
-**Zależności wielowartościowe:** 
+**Zależności wielowartościowe:**
 - `user_id →→ product_id` (użytkownik może mieć wiele ulubionych produktów)
 - `product_id →→ user_id` (produkt może być ulubiony u wielu użytkowników)
+
+---
