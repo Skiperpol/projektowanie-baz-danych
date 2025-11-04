@@ -1,8 +1,8 @@
 {
     "tables": {
       "Address": {
-        "batch_count": 5,
-        "row_count": 500,
+        "batch_count": 1000,
+        "row_count": 850000,
         "columns": [
           {
             "name": "id",
@@ -51,7 +51,7 @@
       },
       "User": {
         "batch_count": 10,
-        "row_count": 1000,
+        "row_count": 600000,
         "columns": [
           {
             "name": "id",
@@ -143,7 +143,7 @@
       },
       "Product": {
         "batch_count": 20,
-        "row_count": 2000,
+        "row_count": 10000,
         "columns": [
           {
             "name": "id",
@@ -192,7 +192,7 @@
       },
       "Category": {
         "batch_count": 1,
-        "row_count": 100,
+        "row_count": 250,
         "columns": [
           {
             "name": "id",
@@ -225,7 +225,7 @@
       },
       "Attribute": {
         "batch_count": 1,
-        "row_count": 30,
+        "row_count": 50,
         "columns": [
           {
             "name": "id",
@@ -251,7 +251,7 @@
       },
       "Option": {
         "batch_count": 3,
-        "row_count": 300,
+        "row_count": 2000,
         "columns": [
           {
             "name": "id",
@@ -286,7 +286,7 @@
       },
       "Promotion": {
         "batch_count": 1,
-        "row_count": 20,
+        "row_count": 300,
         "columns": [
           {
             "name": "id",
@@ -337,7 +337,7 @@
       },
       "Variant": {
         "batch_count": 50,
-        "row_count": 5000,
+        "row_count": 50000,
         "columns": [
           {
             "name": "id",
@@ -389,7 +389,7 @@
       },
       "Warehouse": {
         "batch_count": 1,
-        "row_count": 10,
+        "row_count": 5,
         "columns": [
           {
             "name": "id",
@@ -424,7 +424,7 @@
       },
       "StockItem": {
         "batch_count": 100,
-        "row_count": 10000,
+        "row_count": 5000000,
         "columns": [
           {
             "name": "id",
@@ -467,7 +467,7 @@
       },
       "Review": {
         "batch_count": 50,
-        "row_count": 5000,
+        "row_count": 100000,
         "columns": [
           {
             "name": "id",
@@ -613,7 +613,7 @@
       },
       "Order": {
         "batch_count": 20,
-        "row_count": 2000,
+        "row_count": 200000,
         "columns": [
           {
             "name": "id",
@@ -692,7 +692,7 @@
       },
       "OrderItem": {
         "batch_count": 100,
-        "row_count": 10000,
+        "row_count": 2000000,
         "columns": [
           {
             "name": "id",
@@ -737,7 +737,7 @@
       },
       "Shipment": {
         "batch_count": 20,
-        "row_count": 2000,
+        "row_count": 199000,
         "columns": [
           {
             "name": "id",
@@ -779,7 +779,7 @@
       },
       "Cart": {
         "batch_count": 10,
-        "row_count": 1000,
+        "row_count": 598000,
         "columns": [
           {
             "name": "id",
@@ -806,7 +806,7 @@
       },
       "CartItem": {
         "batch_count": 50,
-        "row_count": 5000,
+        "row_count": 400000,
         "columns": [
           {
             "name": "id",
@@ -851,7 +851,7 @@
       },
       "FavoriteProduct": {
         "batch_count": 50,
-        "row_count": 5000,
+        "row_count": 60000,
         "columns": [
           {
             "name": "id",
@@ -887,7 +887,7 @@
       },
       "ProductCategory": {
         "batch_count": 50,
-        "row_count": 5000,
+        "row_count": 25000,
         "columns": [
           {
             "name": "id",
@@ -923,7 +923,7 @@
       },
       "ProductAttribute": {
         "batch_count": 50,
-        "row_count": 5000,
+        "row_count": 50000,
         "columns": [
           {
             "name": "id",
@@ -959,7 +959,7 @@
       },
       "VariantOption": {
         "batch_count": 100,
-        "row_count": 10000,
+        "row_count": 150000,
         "columns": [
           {
             "name": "id",
