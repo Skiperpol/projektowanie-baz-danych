@@ -36,7 +36,6 @@ class StreamLoader:
         random.seed(0)
 
     def _copy_stream(self, table_schema: str, table_name: str, columns: List[str], rows_iter, batch: int):
-        """rows_iter yields tuples -> write to StringIO via csv.writer and COPY"""
         cur = self.ps_conn.cursor()
         buf = io.StringIO()
         writer = csv.writer(buf)
