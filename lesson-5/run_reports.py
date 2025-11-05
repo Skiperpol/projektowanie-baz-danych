@@ -58,7 +58,8 @@ def main():
                 print(f"\n--- Zapytanie {num}: {QUERIES[num][0]} ---")
                 if "%s" in QUERIES[num][1]:
                     param = input("Podaj wartość do wyszukiwania: ")
-                    results = execute_query(QUERIES[num][1], (param, param))
+                    search_pattern = f"%{param}%"
+                    results = execute_query(QUERIES[num][1], (search_pattern, search_pattern))
                 else:
                     results = execute_query(QUERIES[num][1])
                 print_results(results)
