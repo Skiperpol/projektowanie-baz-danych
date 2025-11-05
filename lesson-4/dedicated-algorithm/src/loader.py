@@ -6,14 +6,12 @@ import random
 from typing import Dict, List
 from db import DB
 from generator import *
-from sqlalchemy import inspect
 
 class StreamLoader:
     def __init__(self, db: DB, row_counts: Dict[str,int]):
         self.db = db
         self.row_counts = row_counts
         self.ps_conn = self.db.psycopg2_conn()
-        self.meta = self.db.metadata_reflect()
         self.generated_ids: Dict[str, List[int]] = {}
         self.product_price: Dict[int, str] = {}
         self.variant_to_product: Dict[int, int] = {}
@@ -38,7 +36,6 @@ class StreamLoader:
         random.seed(0)
 
     def _copy_stream(self, table_schema: str, table_name: str, columns: List[str], rows_iter, batch: int):
-        """rows_iter yields tuples -> write to StringIO via csv.writer and COPY"""
         cur = self.ps_conn.cursor()
         buf = io.StringIO()
         writer = csv.writer(buf)
@@ -178,7 +175,7 @@ class StreamLoader:
                 attempt = 0
                 while attempt < max_attempts:
                     aid = random.choice(attr_ids)
-                    value = fake.word().replace(',', ' ')
+                    value = fake.word()
                     pair = (aid, value)
                     if pair not in self.option_pairs:
                         self.option_pairs.add(pair)
@@ -241,21 +238,22 @@ class StreamLoader:
             self.variant_to_product[r[0]] = r[1]
 
     def _load_warehouse(self, table_name, columns, count, batch):
+        from constants import WAREHOUSE_VALUES
+        
         addr_ids = self.generated_ids.get('Address', [])
         if not addr_ids:
             self._load_generic(table_name, columns, count, batch); return
         
-        if table_name not in self.unique_names:
-            self.unique_names[table_name] = set()
-        unique_set = self.unique_names[table_name]
-        
         def rows():
-            for i in range(count):
-                self.unique_counter += 1
-                aid = random.choice(addr_ids)
-                yield gen_warehouse_row(aid, unique_set, self.unique_counter)
+            for i in range(min(count, len(WAREHOUSE_VALUES))):
+                name, predefined_address_id = WAREHOUSE_VALUES[i]
+                if predefined_address_id <= len(addr_ids):
+                    aid = addr_ids[predefined_address_id - 1]
+                else:
+                    aid = addr_ids[0] if addr_ids else None
+                yield gen_warehouse_row(aid, None, i)
         self._copy_stream('public', table_name, columns, rows(), batch)
-        self.generated_ids['Warehouse'] = self._fetch_recent_ids('Warehouse', count)
+        self.generated_ids['Warehouse'] = self._fetch_recent_ids('Warehouse', min(count, len(WAREHOUSE_VALUES)))
 
     def _load_stockitem(self, table_name, columns, count, batch):
         var_ids = self.generated_ids.get('Variant', [])
@@ -288,40 +286,31 @@ class StreamLoader:
         self.generated_ids['User'] = self._fetch_recent_ids('User', count)
 
     def _load_deliverymethod(self, table_name, columns, count, batch):
-        if table_name not in self.unique_names:
-            self.unique_names[table_name] = set()
-        unique_set = self.unique_names[table_name]
+        from constants import DELIVERY_METHOD_VALUES
         
         def rows():
-            for i in range(count):
-                self.unique_counter += 1
-                yield gen_delivery_method_row(unique_set, self.unique_counter)
+            for i in range(min(count, len(DELIVERY_METHOD_VALUES))):
+                yield gen_delivery_method_row(i)
         self._copy_stream('public', table_name, columns, rows(), batch)
-        self.generated_ids['DeliveryMethod'] = self._fetch_recent_ids('DeliveryMethod', count)
+        self.generated_ids['DeliveryMethod'] = self._fetch_recent_ids('DeliveryMethod', min(count, len(DELIVERY_METHOD_VALUES)))
 
     def _load_paymentmethod(self, table_name, columns, count, batch):
-        if table_name not in self.unique_names:
-            self.unique_names[table_name] = set()
-        unique_set = self.unique_names[table_name]
+        from constants import PAYMENT_METHOD_VALUES
         
         def rows():
-            for i in range(count):
-                self.unique_counter += 1
-                yield gen_payment_method_row(unique_set, self.unique_counter)
+            for i in range(min(count, len(PAYMENT_METHOD_VALUES))):
+                yield gen_payment_method_row(i)
         self._copy_stream('public', table_name, columns, rows(), batch)
-        self.generated_ids['PaymentMethod'] = self._fetch_recent_ids('PaymentMethod', count)
+        self.generated_ids['PaymentMethod'] = self._fetch_recent_ids('PaymentMethod', min(count, len(PAYMENT_METHOD_VALUES)))
 
     def _load_status(self, table_name, columns, count, batch):
-        if table_name not in self.unique_names:
-            self.unique_names[table_name] = set()
-        unique_set = self.unique_names[table_name]
+        from constants import STATUS_VALUES
         
         def rows():
-            for i in range(count):
-                self.unique_counter += 1
-                yield gen_status_row(unique_set, self.unique_counter)
+            for i in range(min(count, len(STATUS_VALUES))):
+                yield gen_status_row(i)
         self._copy_stream('public', table_name, columns, rows(), batch)
-        self.generated_ids['Status'] = self._fetch_recent_ids('Status', count)
+        self.generated_ids['Status'] = self._fetch_recent_ids('Status', min(count, len(STATUS_VALUES)))
 
     def _load_cart(self, table_name, columns, count, batch):
         user_ids = self.generated_ids.get('User', [])
