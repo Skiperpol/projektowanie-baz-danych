@@ -26,7 +26,6 @@ class DB:
         return psycopg2.connect(**self.psycopg2_params)
     
     def delete_all_tables(self):
-        """Truncate all tables - faster than DELETE and resets sequences"""
         conn = self.psycopg2_conn()
         cur = conn.cursor()
         
@@ -46,14 +45,14 @@ class DB:
         else:
             try:
                 tables_str = ', '.join([f'"{name}"' for name in table_names])
-                cur.execute(f'TRUNCATE TABLE {tables_str} CASCADE')
+                cur.execute(f'TRUNCATE TABLE {tables_str} RESTART IDENTITY CASCADE')
                 print(f"  Truncated {len(table_names)} tables")
             except Exception as e:
                 print(f"  Error: Could not truncate tables together: {e}")
                 print("  Trying to truncate tables individually...")
                 for table_name in table_names:
                     try:
-                        cur.execute(f'TRUNCATE TABLE "{table_name}" CASCADE')
+                        cur.execute(f'TRUNCATE TABLE "{table_name}" RESTART IDENTITY CASCADE')
                         print(f"  Truncated {table_name}")
                     except Exception as e2:
                         print(f"  Warning: Could not truncate {table_name}: {e2}")
