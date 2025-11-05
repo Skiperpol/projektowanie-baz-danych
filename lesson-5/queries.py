@@ -116,11 +116,15 @@ QUERIES = {
         ORDER BY total_quantity DESC
         LIMIT 10;
     """),
-    16: ("Średni rabat per promocja", """
-        SELECT pr.name AS promotion_name, AVG(pr.discount_percentage) AS avg_discount
+    16: ("Aktywne promocje i objęta nimi liczba wariantów", """
+        SELECT pr.name AS promotion_name,
+            COUNT(v.id) AS active_discount_items
         FROM "Promotion" pr
+        JOIN "Variant" v ON v.promotion_id = pr.id
+        WHERE pr.start_date <= NOW()
+        AND pr.end_date >= NOW()
         GROUP BY pr.name
-        ORDER BY avg_discount DESC;
+        ORDER BY active_discount_items DESC;
     """),
     17: ("Najaktywniejsi użytkownicy wg liczby recenzji", """
         SELECT u.id, u.first_name, u.last_name, COUNT(r.id) AS reviews_count
@@ -133,15 +137,20 @@ QUERIES = {
     18: ("Wyszukiwanie produktów po nazwie lub opisie (parametryzowane)", """
         SELECT id, name, description, price
         FROM "Product"
-        WHERE name ILIKE '%' || %s || '%' OR description ILIKE '%' || %s || '%';
+        WHERE name ILIKE %s OR description ILIKE %s;
     """),
-    19: ("Średnia wartość zamówienia per status", """
-        SELECT s.name AS status, AVG(oi.unit_price) AS avg_order_value
+    19: ("Konwersja zamówień wg statusu", """
+        SELECT s.name AS status,
+            COUNT(o.id) AS orders_count,
+            ROUND(
+                COUNT(o.id)::numeric /
+                SUM(COUNT(o.id)) OVER () * 100,
+                2
+            ) AS percentage_share
         FROM "Order" o
         JOIN "Status" s ON s.id = o.status_id
-        JOIN "OrderItem" oi ON oi.order_id = o.id
         GROUP BY s.name
-        ORDER BY avg_order_value DESC;
+        ORDER BY orders_count DESC;
     """),
     20: ("Produkty z wariantami objętymi promocją, z końcową ceną", """
         SELECT p.name AS product_name, v.sku, 
