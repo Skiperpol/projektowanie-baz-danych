@@ -4,7 +4,6 @@ from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 from queries import QUERIES
 
-# 1️⃣ Wczytanie zmiennych środowiskowych
 load_dotenv()
 DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
@@ -12,7 +11,6 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_PORT = os.getenv("DB_PORT", 5432)
 
-# 2️⃣ Funkcja wykonująca zapytanie
 def execute_query(query, params=None):
     try:
         with psycopg2.connect(
@@ -33,7 +31,6 @@ def execute_query(query, params=None):
         print("Błąd połączenia lub zapytania:", e)
         return []
 
-# 3️⃣ Funkcja drukująca wyniki
 def print_results(results):
     if not results:
         print("Brak wyników.")
@@ -42,7 +39,6 @@ def print_results(results):
         print(row)
     print(f"\nLiczba rekordów: {len(results)}\n")
 
-# 4️⃣ Menu użytkownika
 def main():
     print("=== Raporty SQL ===")
     for key, (desc, _) in QUERIES.items():
