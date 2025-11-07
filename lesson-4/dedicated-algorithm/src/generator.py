@@ -37,8 +37,9 @@ def gen_manufacturer_row(unique_set: set = None, counter: int = 0):
 
     return (name,)
 
-def gen_category_row(name_hint: Optional[str] = None):
-    return (f"Cat_{counter}_{name}")
+def gen_category_row(name_hint: Optional[str] = None, parent_id: Optional[int] = None):
+    name = name_hint or fake.word().capitalize()
+    return (name, parent_id)
 
 
 def gen_attribute_row(unique_set: set = None, counter: int = 0):

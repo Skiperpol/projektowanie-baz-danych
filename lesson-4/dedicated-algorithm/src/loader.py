@@ -76,7 +76,7 @@ class StreamLoader:
 
     def load_all(self):
         order = [
-            ('Category', ['name']),
+            ('Category', ['name', 'parent_id']),
             ('Address', ['street','city','postal_code','country']),
             ('Warehouse', ['name','address_id']),
             ('Attribute', ['name']),
@@ -129,9 +129,20 @@ class StreamLoader:
     def _load_category(self, table_name, columns, count, batch):
         def rows():
             for i in range(count):
-                yield (f"Category_{i+1}",)
+                name = f"Category_{i+1}"
+                yield (name, None)
         self._copy_stream('public', table_name, columns, rows(), batch)
-        self.generated_ids['Category'] = self._fetch_recent_ids('Category', count)
+        category_ids = self._fetch_recent_ids('Category', count)
+        self.generated_ids['Category'] = category_ids
+        
+        if len(category_ids) > 1:
+            cur = self.ps_conn.cursor()
+            for i in range(1, len(category_ids)):
+                if random.random() < 0.7:
+                    parent_id = random.choice(category_ids[:i])
+                    cur.execute(f'UPDATE "Category" SET parent_id = %s WHERE id = %s', (parent_id, category_ids[i]))
+            self.ps_conn.commit()
+            cur.close()
 
     def _load_address(self, table_name, columns, count, batch):
         def rows():
@@ -264,7 +275,7 @@ class StreamLoader:
             for _ in range(count):
                 wid = random.choice(wh_ids)
                 vid = random.choice(var_ids)
-                yield gen_stockitem_row(wid, vid)
+                yield gen_stockitem_row(wid, vid, None)
         self._copy_stream('public', table_name, columns, rows(), batch)
         stock_ids = self._fetch_recent_ids('StockItem', count)
         self.generated_ids['StockItem'] = stock_ids
@@ -384,33 +395,29 @@ class StreamLoader:
         order_ids = self.generated_ids.get('Order', [])
         stock_ids = self.generated_ids.get('StockItem', [])
         if not order_ids or not stock_ids:
-            self._load_generic(table_name, columns, count, batch); return
-        
+            self._load_generic(table_name, columns, count, batch)
+            return
+
+        possible_pairs = len(order_ids) * len(stock_ids)
+
+        if count > possible_pairs:
+            raise ValueError(
+                f"Too many OrderItem rows requested ({count}), "
+                f"max unique combinations: {possible_pairs}"
+            )
+
+        pairs = set()
+        while len(pairs) < count:
+            pairs.add((random.choice(order_ids), random.choice(stock_ids)))
+
         def rows():
-            max_attempts = 100
-            for i in range(count):
-                attempt = 0
-                while attempt < max_attempts:
-                    oid = random.choice(order_ids)
-                    sid = random.choice(stock_ids)
-                    pair = (oid, sid)
-                    if pair not in self.orderitem_pairs:
-                        self.orderitem_pairs.add(pair)
-                        unit_price = str(Decimal(random.uniform(5, 500)).quantize(Decimal('0.01')))
-                        yield gen_orderitem_row(oid, sid, unit_price)
-                        break
-                    attempt += 1
-                else:
-                    print(f"  Warning: Could not generate unique (order_id, stock_item_id) pair for OrderItem row {i+1}")
-                    oid = random.choice(order_ids)
-                    sid = random.choice(stock_ids)
-                    pair = (oid, sid)
-                    self.orderitem_pairs.add(pair)
-                    unit_price = str(Decimal(random.uniform(5, 500)).quantize(Decimal('0.01')))
-                    yield gen_orderitem_row(oid, sid, unit_price)
-        
+            for oid, sid in pairs:
+                unit_price = str(Decimal(random.uniform(5, 500)).quantize(Decimal('0.01')))
+                yield gen_orderitem_row(oid, sid, unit_price)
+
         self._copy_stream('public', table_name, columns, rows(), batch)
         self.generated_ids['OrderItem'] = self._fetch_recent_ids('OrderItem', count)
+
 
     def _load_shipment(self, table_name, columns, count, batch):
         order_ids = self.generated_ids.get('Order', [])
@@ -422,7 +429,22 @@ class StreamLoader:
                 yield gen_shipment_row(oid, self.unique_tracking_numbers, self.tracking_counter)
                 self.tracking_counter += 1
         self._copy_stream('public', table_name, columns, rows(), batch)
-        self.generated_ids['Shipment'] = self._fetch_recent_ids('Shipment', count)
+        shipment_ids = self._fetch_recent_ids('Shipment', count)
+        self.generated_ids['Shipment'] = shipment_ids
+        
+        stock_ids = self.generated_ids.get('StockItem', [])
+        if stock_ids and shipment_ids:
+            cur = self.ps_conn.cursor()
+            updated_count = 0
+            for stock_id in stock_ids:
+                if random.random() < 0.3:
+                    shipment_id = random.choice(shipment_ids)
+                    cur.execute(f'UPDATE "StockItem" SET shipment_id = %s WHERE id = %s', (shipment_id, stock_id))
+                    updated_count += 1
+            self.ps_conn.commit()
+            cur.close()
+            if updated_count > 0:
+                print(f"  Updated {updated_count} StockItem records with shipment_id")
 
     def _load_favoriteproduct(self, table_name, columns, count, batch):
         user_ids = self.generated_ids.get('User', [])
