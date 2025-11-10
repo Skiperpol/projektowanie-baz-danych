@@ -1,0 +1,97 @@
+#Funkcja
+CREATE OR REPLACE FUNCTION fn_product_attribute_pivot_true()
+RETURNS SETOF RECORD
+LANGUAGE plpgsql AS
+$$
+DECLARE
+    attr_cols TEXT;
+    dyn_sql TEXT;
+BEGIN
+    SELECT string_agg(
+               format(
+                   'COALESCE(MAX(CASE WHEN attribute_name = %L THEN value_count END),0) AS %I',
+                   name, name
+               ),
+               ', '
+           )
+    INTO attr_cols
+    FROM (
+        SELECT DISTINCT a.name
+        FROM "Attribute" a
+        JOIN "Option" o ON o.attribute_id = a.id
+        JOIN "VariantOption" vo ON vo.option_id = o.id
+    ) AS sub;
+
+    dyn_sql := '
+    WITH RECURSIVE category_path AS (
+        SELECT id, name, parent_id, 1 AS level
+        FROM "Category"
+        WHERE parent_id IS NULL
+      UNION ALL
+        SELECT c.id, c.name, c.parent_id, cp.level + 1
+        FROM "Category" c
+        JOIN category_path cp ON cp.id = c.parent_id
+    ),
+    product_attr_agg AS (
+        SELECT
+            pa.product_id,
+            a.name AS attribute_name,
+            COUNT(DISTINCT vo.option_id) AS value_count
+        FROM "ProductAttribute" pa
+        JOIN "Attribute" a ON a.id = pa.attribute_id
+        JOIN "Option" o ON o.attribute_id = a.id
+        JOIN "VariantOption" vo ON vo.option_id = o.id
+        GROUP BY pa.product_id, a.name
+    ),
+    product_attrs AS (
+        SELECT
+            cp.id AS category_id,
+            cp.level,
+            p.name::TEXT AS product_name,
+            paa.attribute_name,
+            paa.value_count
+        FROM "Product" p
+        JOIN "ProductCategory" pc ON pc.product_id = p.id
+        JOIN category_path cp ON cp.id = pc.category_id
+        LEFT JOIN product_attr_agg paa ON paa.product_id = p.id
+    )
+    SELECT
+        STRING_AGG(cp.name, '' > '') AS category_path,
+        product_name, ' || attr_cols || '
+    FROM product_attrs pa
+    JOIN category_path cp ON cp.id = pa.category_id
+    GROUP BY product_name
+    ORDER BY product_name;
+    ';
+
+    RETURN QUERY EXECUTE dyn_sql;
+END;
+$$;
+
+
+
+
+# Sprawdzenie atrybutów
+SELECT string_agg(quote_ident(name) || ' BIGINT', ', ')
+FROM "Attribute";
+
+
+#Potem trzeba wrzucic 
+SELECT * 
+FROM fn_product_attribute_pivot_true() AS t(
+    category_path TEXT,
+    product_name TEXT,
+    -- atrybuty
+);
+
+CREATE INDEX IF NOT EXISTS idx_variantoption_option_id
+    ON "VariantOption"(option_id);
+
+CREATE INDEX IF NOT EXISTS idx_option_attribute_id
+    ON "Option"(attribute_id);
+
+CREATE INDEX IF NOT EXISTS idx_productattribute_product_id
+    ON "ProductAttribute"(product_id);
+
+CREATE INDEX IF NOT EXISTS idx_productcategory_product_id
+    ON "ProductCategory"(product_id);
