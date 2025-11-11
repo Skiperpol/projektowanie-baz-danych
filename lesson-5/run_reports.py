@@ -4,6 +4,11 @@ from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 from queries import QUERIES
 
+try:
+    from tabulate import tabulate
+except ImportError:
+    tabulate = None
+
 load_dotenv()
 DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
@@ -25,18 +30,28 @@ def execute_query(query, params=None):
                     cur.execute(query, params)
                 else:
                     cur.execute(query)
+                headers = [desc[0] for desc in cur.description] if cur.description else []
                 results = cur.fetchall()
-                return results
+                return results, headers
     except Exception as e:
         print("Błąd połączenia lub zapytania:", e)
-        return []
+        return [], []
 
-def print_results(results):
+def print_results(results, headers=None):
     if not results:
         print("Brak wyników.")
         return
-    for row in results:
-        print(row)
+
+    if tabulate:
+        if isinstance(results[0], dict):
+            ordered_headers = headers or list(results[0].keys())
+            rows = [[row.get(h) for h in ordered_headers] for row in results]
+            print(tabulate(rows, headers=ordered_headers, tablefmt="grid"))
+        else:
+            print(tabulate(results, headers=headers if headers else (), tablefmt="grid"))
+    else:
+        for row in results:
+            print(row)
     print(f"\nLiczba rekordów: {len(results)}\n")
 
 def main():
@@ -49,8 +64,8 @@ def main():
     if choice == "0":
         for key, (_, query) in QUERIES.items():
             print(f"\n--- Zapytanie {key}: {QUERIES[key][0]} ---")
-            results = execute_query(query)
-            print_results(results)
+            results, headers = execute_query(query)
+            print_results(results, headers)
     else:
         try:
             num = int(choice)
@@ -59,10 +74,10 @@ def main():
                 if "%s" in QUERIES[num][1]:
                     param = input("Podaj wartość do wyszukiwania: ")
                     search_pattern = f"%{param}%"
-                    results = execute_query(QUERIES[num][1], (search_pattern, search_pattern))
+                    results, headers = execute_query(QUERIES[num][1], (search_pattern, search_pattern))
                 else:
-                    results = execute_query(QUERIES[num][1])
-                print_results(results)
+                    results, headers = execute_query(QUERIES[num][1])
+                print_results(results, headers)
             else:
                 print("Niepoprawny numer zapytania.")
         except ValueError:

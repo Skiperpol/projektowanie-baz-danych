@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from db import DB
-from loader import StreamLoader
+from loaders import StreamLoader
 
 def main():
     base_dir = Path(__file__).parent.parent
