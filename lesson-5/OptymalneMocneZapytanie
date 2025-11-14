@@ -87,6 +87,18 @@ FROM "Attribute";
 --     "Attr_1_Raise" BIGINT, "Attr_2_Base" BIGINT, "Attr_3_Range" BIGINT, "Attr_4_Minute" BIGINT, "Attr_5_Film" BIGINT, "Attr_6_Century" BIGINT, "Attr_7_Thousand" BIGINT, "Attr_8_Challenge" BIGINT, "Attr_9_Religious" BIGINT, "Attr_10_Space" BIGINT, "Attr_11_Evidence" BIGINT, "Attr_12_Interest" BIGINT, "Attr_13_Notice" BIGINT, "Attr_14_Term" BIGINT, "Attr_15_Sit" BIGINT, "Attr_16_Move" BIGINT, "Attr_17_Mr" BIGINT, "Attr_18_Get" BIGINT, "Attr_19_The" BIGINT, "Attr_20_Draw" BIGINT, "Attr_21_Own" BIGINT, "Attr_22_Term" BIGINT, "Attr_23_Later" BIGINT, "Attr_24_Black" BIGINT, "Attr_25_Parent" BIGINT, "Attr_26_Red" BIGINT, "Attr_27_Effect" BIGINT, "Attr_28_Ahead" BIGINT, "Attr_29_Candidate" BIGINT, "Attr_30_Senior" BIGINT, "Attr_31_Crime" BIGINT, "Attr_32_Number" BIGINT, "Attr_33_Thus" BIGINT, "Attr_34_Newspaper" BIGINT, "Attr_35_Sign" BIGINT, "Attr_36_Sure" BIGINT, "Attr_37_Stuff" BIGINT, "Attr_38_Eight" BIGINT, "Attr_39_So" BIGINT, "Attr_40_Begin" BIGINT, "Attr_41_Sometimes" BIGINT, "Attr_42_Customer" BIGINT, "Attr_43_Be" BIGINT, "Attr_44_East" BIGINT, "Attr_45_Return" BIGINT, "Attr_46_Already" BIGINT, "Attr_47_At" BIGINT, "Attr_48_Room" BIGINT, "Attr_49_Century" BIGINT, "Attr_50_Organization" BIGINT
 -- );
 
+#Materialized view
+DROP MATERIALIZED VIEW IF EXISTS mv_product_attribute_pivot;
+
+CREATE MATERIALIZED VIEW mv_product_attribute_pivot AS
+SELECT *
+FROM fn_product_attribute_pivot_fullpath() AS t(
+    category_path TEXT,
+    product_name TEXT,
+    "Attr_1_Benefit" BIGINT, "Attr_2_Will" BIGINT, "Attr_3_Usually" BIGINT, "Attr_4_For" BIGINT, "Attr_5_Who" BIGINT, "Attr_6_Stand" BIGINT, "Attr_7_Water" BIGINT, "Attr_8_People" BIGINT, "Attr_9_Young" BIGINT, "Attr_10_Personal" BIGINT, "Attr_11_Around" BIGINT, "Attr_12_Until" BIGINT, "Attr_13_Member" BIGINT, "Attr_14_Upon" BIGINT, "Attr_15_Program" BIGINT, "Attr_16_Wear" BIGINT, "Attr_17_Everybody" BIGINT, "Attr_18_Cell" BIGINT, "Attr_19_Institution" BIGINT, "Attr_20_Behind" BIGINT, "Attr_21_Watch" BIGINT, "Attr_22_Impact" BIGINT, "Attr_23_Manage" BIGINT, "Attr_24_Very" BIGINT, "Attr_25_Seven" BIGINT, "Attr_26_Sure" BIGINT, "Attr_27_Others" BIGINT, "Attr_28_Bag" BIGINT, "Attr_29_When" BIGINT, "Attr_30_Teacher" BIGINT
+);
+
+
 CREATE INDEX IF NOT EXISTS idx_variantoption_option_id
     ON "VariantOption"(option_id);
 
