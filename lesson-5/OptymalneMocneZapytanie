@@ -4,45 +4,47 @@ RETURNS SETOF RECORD
 LANGUAGE plpgsql AS
 $$
 DECLARE
-    attr_cols TEXT;
-    dyn_sql TEXT;
+    attr_cols TEXT;  
+    dyn_sql TEXT;    
 BEGIN
     SELECT string_agg(
-               format(
-                   'COALESCE(MAX(CASE WHEN attribute_name = %L THEN value_count END),0) AS %I',
-                   name, name
-               ),
-               ', '
-           )
+        format(
+            'COALESCE(MAX(CASE WHEN attribute_name = %L THEN value_count END),0) AS %I',
+            name, name
+        ),
+        ', '
+    )
     INTO attr_cols
     FROM (
         SELECT DISTINCT a.name
-        FROM "Attribute" a
-        JOIN "Option" o ON o.attribute_id = a.id
-        JOIN "VariantOption" vo ON vo.option_id = o.id
+        FROM public."Attribute" a
+        JOIN public."Option" o ON o.attribute_id = a.id
+        JOIN public."VariantOption" vo ON vo.option_id = o.id
     ) AS sub;
+
 
     dyn_sql := '
     WITH RECURSIVE category_path_cte AS (
-        SELECT id, name, parent_id, name::TEXT AS path
-        FROM "Category"
+        SELECT id, name, parent_id, name::TEXT AS path, ARRAY[id] AS visited
+        FROM public."Category"
         WHERE parent_id IS NULL
 
         UNION ALL
 
-        SELECT c.id, c.name, c.parent_id, cp.path || '' > '' || c.name
-        FROM "Category" c
+        SELECT c.id, c.name, c.parent_id, cp.path || '' > '' || c.name, cp.visited || c.id
+        FROM public."Category" c
         JOIN category_path_cte cp ON cp.id = c.parent_id
+        WHERE NOT c.id = ANY(cp.visited)
     ),
     product_attr_agg AS (
         SELECT
             pa.product_id,
             a.name AS attribute_name,
             COUNT(vo.option_id) AS value_count
-        FROM "ProductAttribute" pa
-        JOIN "Attribute" a ON a.id = pa.attribute_id
-        JOIN "Option" o ON o.attribute_id = a.id
-        JOIN "VariantOption" vo ON vo.option_id = o.id
+        FROM public."ProductAttribute" pa
+        JOIN public."Attribute" a ON a.id = pa.attribute_id
+        JOIN public."Option" o ON o.attribute_id = a.id
+        JOIN public."VariantOption" vo ON vo.option_id = o.id
         GROUP BY pa.product_id, a.name
     ),
     product_attrs AS (
@@ -51,8 +53,8 @@ BEGIN
             p.name::TEXT AS product_name,
             paa.attribute_name,
             paa.value_count
-        FROM "Product" p
-        JOIN "ProductCategory" pc ON pc.product_id = p.id
+        FROM public."Product" p
+        JOIN public."ProductCategory" pc ON pc.product_id = p.id
         JOIN category_path_cte cp ON cp.id = pc.category_id
         LEFT JOIN product_attr_agg paa ON paa.product_id = p.id
     )
@@ -78,12 +80,12 @@ FROM "Attribute";
 
 
 #Potem trzeba wrzucic 
-SELECT * 
-FROM fn_product_attribute_pivot_fullpath() AS t(
-    category_path TEXT,
-    product_name TEXT,
-    "Attr_1_Raise" BIGINT, "Attr_2_Base" BIGINT, "Attr_3_Range" BIGINT, "Attr_4_Minute" BIGINT, "Attr_5_Film" BIGINT, "Attr_6_Century" BIGINT, "Attr_7_Thousand" BIGINT, "Attr_8_Challenge" BIGINT, "Attr_9_Religious" BIGINT, "Attr_10_Space" BIGINT, "Attr_11_Evidence" BIGINT, "Attr_12_Interest" BIGINT, "Attr_13_Notice" BIGINT, "Attr_14_Term" BIGINT, "Attr_15_Sit" BIGINT, "Attr_16_Move" BIGINT, "Attr_17_Mr" BIGINT, "Attr_18_Get" BIGINT, "Attr_19_The" BIGINT, "Attr_20_Draw" BIGINT, "Attr_21_Own" BIGINT, "Attr_22_Term" BIGINT, "Attr_23_Later" BIGINT, "Attr_24_Black" BIGINT, "Attr_25_Parent" BIGINT, "Attr_26_Red" BIGINT, "Attr_27_Effect" BIGINT, "Attr_28_Ahead" BIGINT, "Attr_29_Candidate" BIGINT, "Attr_30_Senior" BIGINT, "Attr_31_Crime" BIGINT, "Attr_32_Number" BIGINT, "Attr_33_Thus" BIGINT, "Attr_34_Newspaper" BIGINT, "Attr_35_Sign" BIGINT, "Attr_36_Sure" BIGINT, "Attr_37_Stuff" BIGINT, "Attr_38_Eight" BIGINT, "Attr_39_So" BIGINT, "Attr_40_Begin" BIGINT, "Attr_41_Sometimes" BIGINT, "Attr_42_Customer" BIGINT, "Attr_43_Be" BIGINT, "Attr_44_East" BIGINT, "Attr_45_Return" BIGINT, "Attr_46_Already" BIGINT, "Attr_47_At" BIGINT, "Attr_48_Room" BIGINT, "Attr_49_Century" BIGINT, "Attr_50_Organization" BIGINT
-);
+-- SELECT * 
+-- FROM fn_product_attribute_pivot_fullpath() AS t(
+--     category_path TEXT,
+--     product_name TEXT,
+--     "Attr_1_Raise" BIGINT, "Attr_2_Base" BIGINT, "Attr_3_Range" BIGINT, "Attr_4_Minute" BIGINT, "Attr_5_Film" BIGINT, "Attr_6_Century" BIGINT, "Attr_7_Thousand" BIGINT, "Attr_8_Challenge" BIGINT, "Attr_9_Religious" BIGINT, "Attr_10_Space" BIGINT, "Attr_11_Evidence" BIGINT, "Attr_12_Interest" BIGINT, "Attr_13_Notice" BIGINT, "Attr_14_Term" BIGINT, "Attr_15_Sit" BIGINT, "Attr_16_Move" BIGINT, "Attr_17_Mr" BIGINT, "Attr_18_Get" BIGINT, "Attr_19_The" BIGINT, "Attr_20_Draw" BIGINT, "Attr_21_Own" BIGINT, "Attr_22_Term" BIGINT, "Attr_23_Later" BIGINT, "Attr_24_Black" BIGINT, "Attr_25_Parent" BIGINT, "Attr_26_Red" BIGINT, "Attr_27_Effect" BIGINT, "Attr_28_Ahead" BIGINT, "Attr_29_Candidate" BIGINT, "Attr_30_Senior" BIGINT, "Attr_31_Crime" BIGINT, "Attr_32_Number" BIGINT, "Attr_33_Thus" BIGINT, "Attr_34_Newspaper" BIGINT, "Attr_35_Sign" BIGINT, "Attr_36_Sure" BIGINT, "Attr_37_Stuff" BIGINT, "Attr_38_Eight" BIGINT, "Attr_39_So" BIGINT, "Attr_40_Begin" BIGINT, "Attr_41_Sometimes" BIGINT, "Attr_42_Customer" BIGINT, "Attr_43_Be" BIGINT, "Attr_44_East" BIGINT, "Attr_45_Return" BIGINT, "Attr_46_Already" BIGINT, "Attr_47_At" BIGINT, "Attr_48_Room" BIGINT, "Attr_49_Century" BIGINT, "Attr_50_Organization" BIGINT
+-- );
 
 CREATE INDEX IF NOT EXISTS idx_variantoption_option_id
     ON "VariantOption"(option_id);
