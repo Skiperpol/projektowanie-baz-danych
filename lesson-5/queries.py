@@ -51,23 +51,28 @@ QUERIES = {
     """),
 
     4: ("Top 5 produktów z najwięcej recenzjami", """
-        SELECT p.id, p.name, COUNT(r.id) AS reviews_count
+        SELECT p.id, p.name, COALESCE(r.count, 0) AS reviews_count
         FROM "Product" p
-        LEFT JOIN "Review" r ON r.product_id = p.id
-        GROUP BY p.id, p.name
+        LEFT JOIN (
+            SELECT product_id, COUNT(*) AS count
+            FROM "Review"
+            GROUP BY product_id
+        ) r ON p.id = r.product_id
         ORDER BY reviews_count DESC
         LIMIT 5;
+
     """),
     
     5: ("Całkowity Przychód Pogrupowany Miesięcznie za Ostatni Rok", """
         SELECT
-        DATE_TRUNC('month', o.order_date)::date AS order_month,
-        SUM(oi.unit_price) AS monthly_revenue
-        FROM "Order" o
-        JOIN "OrderItem" oi ON o.id = oi.order_id
-        WHERE o.order_date >= NOW() - INTERVAL '1 year'
-        GROUP BY order_month
-        ORDER BY order_month DESC;
+            DATE_TRUNC('month', order_date)::date AS order_month,
+            SUM(unit_price) AS monthly_revenue
+        FROM "OrderItem" oi
+        JOIN "Order" o ON o.id = oi.order_id
+        WHERE o.order_date >= date_trunc('year', now()) - interval '0 year'
+        GROUP BY 1
+        ORDER BY 1 DESC;
+
     """),
     
     6: ("Produkty najczęściej dodawane do ulubionych", """
@@ -95,12 +100,16 @@ QUERIES = {
     """),
 
     8: ("Stan magazynowy per produkt", """
-        SELECT p.name AS product_name, SUM(CASE WHEN si.shipment_id IS NULL THEN 1 ELSE 0 END) AS stock_count
+        SELECT
+        p.name AS product_name,
+        COUNT(si.id) AS stock_count
         FROM "Product" p
         JOIN "Variant" v ON v.product_id = p.id
         JOIN "StockItem" si ON si.variant_id = v.id
+        WHERE si.shipment_id IS NULL
         GROUP BY p.name
         ORDER BY stock_count DESC;
+
     """),
     
     9: ("Najpopularniejsze Kategorie (wg. Całkowitego Przychodu)", """
