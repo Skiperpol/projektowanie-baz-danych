@@ -225,16 +225,22 @@ QUERIES = {
     """),
 
      19: ("Użytkownicy, Którzy Dodali Produkt do Koszyka, Ale Nie Złożyli Zamówienia (Potencjał Odbudowy Koszyka)", """
-       SELECT DISTINCT
-        u.email,
-        p.name AS product_in_cart
+       WITH users_without_orders AS (
+        SELECT u.id, u.email
         FROM "User" u
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM "Order" o
+            WHERE o.user_id = u.id
+            )
+        )
+        SELECT u.email, p.name AS product_in_cart
+        FROM users_without_orders u
         JOIN "Cart" c ON u.id = c.user_id
         JOIN "CartItem" ci ON c.id = ci.cart_id
         JOIN "Variant" v ON ci.variant_id = v.id
-        JOIN "Product" p ON v.product_id = p.id
-        LEFT JOIN "Order" o ON u.id = o.user_id
-        WHERE o.id IS NULL;
+        JOIN "Product" p ON v.product_id = p.id;
+
 
     """),
 #///////////////////////////////////////////////////////////////////////////////
@@ -360,23 +366,30 @@ QUERIES = {
     """),
 
     30: ("Wskaźnik Lojalności (Repeat Purchase Rate) Użytkowników z Podziałem na Miasto Adresu Rozliczeniowego", """
-        SELECT
-            a.city,
-            COUNT(DISTINCT CASE WHEN user_orders.orders_count > 1 THEN o.user_id END) AS repeat_customers,
-            COUNT(DISTINCT o.user_id) AS total_customers,
-            ROUND(
-                COUNT(DISTINCT CASE WHEN user_orders.orders_count > 1 THEN o.user_id END) * 100.0 /
-                NULLIF(COUNT(DISTINCT o.user_id), 0),
-                2
-            ) AS repeat_purchase_rate
-        FROM "Order" o
-        JOIN "Address" a ON o.billing_address_id = a.id
-        JOIN (
-            SELECT user_id, COUNT(*) AS orders_count
+        WITH user_orders AS (
+            SELECT user_id,
+                   COUNT(*) AS orders_count
             FROM "Order"
             GROUP BY user_id
-        ) AS user_orders ON user_orders.user_id = o.user_id
+        ),
+        orders_with_users AS (
+            SELECT o.id, o.user_id, o.billing_address_id, u.orders_count
+            FROM "Order" o
+            JOIN user_orders u ON u.user_id = o.user_id
+        )
+        SELECT
+            a.city,
+            COUNT(*) FILTER (WHERE orders_count > 1) AS repeat_customers,
+            COUNT(*) AS total_customers,
+            ROUND(
+                COUNT(*) FILTER (WHERE orders_count > 1) * 100.0 /
+                NULLIF(COUNT(*), 0),
+                2
+            ) AS repeat_purchase_rate
+        FROM orders_with_users o
+        JOIN "Address" a ON a.id = o.billing_address_id
         GROUP BY a.city
         ORDER BY repeat_purchase_rate DESC;
+
     """),
 }
