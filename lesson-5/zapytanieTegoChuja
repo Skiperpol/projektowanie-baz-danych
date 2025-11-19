@@ -1,0 +1,68 @@
+#Funkcja
+CREATE OR REPLACE FUNCTION fn_product_attribute_pivot_true()
+RETURNS SETOF RECORD
+LANGUAGE plpgsql AS
+$$
+DECLARE
+    attr_cols TEXT;
+    dyn_sql TEXT;
+BEGIN
+    -- 1. Pobieramy wszystkie atrybuty i generujemy kolumny pivot
+    SELECT string_agg(
+               format(
+                   'COALESCE(MAX(CASE WHEN attribute_name = %L THEN value_count END),0) AS %I',
+                   name, name
+               ),
+               ', '
+           )
+    INTO attr_cols
+    FROM "Attribute";
+
+    -- 2. Tworzymy cały dynamiczny SQL jako string
+    dyn_sql := 'WITH RECURSIVE category_path AS (
+                    SELECT id, name, parent_id, name::TEXT AS path
+                    FROM "Category"
+                    WHERE parent_id IS NULL
+                  UNION ALL
+                    SELECT c.id, c.name, c.parent_id, cp.path || '' > '' || c.name
+                    FROM "Category" c
+                    JOIN category_path cp ON cp.id = c.parent_id
+                ),
+                product_attrs AS (
+                    SELECT
+                        cp.path AS category_path,
+                        p.name::TEXT AS product_name,
+                        a.name::TEXT AS attribute_name,
+                        COUNT(DISTINCT o.value) AS value_count
+                    FROM "Product" p
+                    JOIN "ProductCategory" pc ON pc.product_id = p.id
+                    JOIN category_path cp ON cp.id = pc.category_id
+                    LEFT JOIN "ProductAttribute" pa ON pa.product_id = p.id
+                    LEFT JOIN "Attribute" a ON a.id = pa.attribute_id
+                    LEFT JOIN "Option" o ON o.attribute_id = a.id
+                    LEFT JOIN "VariantOption" vo ON vo.option_id = o.id
+                    GROUP BY cp.path, p.name, a.name
+                )
+                SELECT category_path, product_name, ' || attr_cols || '
+                FROM product_attrs
+                GROUP BY category_path, product_name
+                ORDER BY category_path, product_name;';
+
+    -- 3. Wykonujemy dynamiczny SQL i zwracamy wynik
+    RETURN QUERY EXECUTE dyn_sql;
+END;
+$$;
+
+
+# Sprawdzenie atrybutów
+SELECT string_agg(quote_ident(name) || ' BIGINT', ', ')
+FROM "Attribute";
+
+
+#Potem trzeba wrzucic 
+-- SELECT * 
+-- FROM fn_product_attribute_pivot_true() AS t(
+--     category_path TEXT,
+--     product_name TEXT,
+--     -- atrybuty
+-- );

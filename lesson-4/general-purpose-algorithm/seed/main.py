@@ -37,11 +37,11 @@ def main():
     logging.info("Seed order: %s", ", ".join(order))
 
     db_config = {
-        "host": os.getenv("DB_HOST", "localhost"),
+        "host": os.getenv("DB_HOST", "projectdatabase.cjy06esawu7e.eu-west-3.rds.amazonaws.com"),
         "port": int(os.getenv("DB_PORT", "5432")),
         "user": os.getenv("DB_USER", "postgres"),
-        "password": os.getenv("DB_PASSWORD", ""),
-        "database": os.getenv("DB_DATABASE", "testdb"),
+        "password": os.getenv("DB_PASSWORD", "ciyoJLyVTY1dyCTGkAws"),
+        "database": os.getenv("DB_DATABASE", "postgres"),
     }
 
     seeder = Seeder(tables, order, db_config, logger=logging.getLogger())

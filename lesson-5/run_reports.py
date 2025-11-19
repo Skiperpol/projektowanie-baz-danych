@@ -14,11 +14,11 @@ DB_PORT = os.getenv("DB_PORT", 5432)
 def execute_query(query, params=None):
     try:
         with psycopg2.connect(
-            host=DB_HOST,
-            database=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            port=DB_PORT
+            host="projectdatabase.cjy06esawu7e.eu-west-3.rds.amazonaws.com",
+            database="postgres",
+            user="postgres",
+            password="ciyoJLyVTY1dyCTGkAws",
+            port=5432
         ) as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 if params:
