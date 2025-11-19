@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from constants import PAYMENT_METHOD_VALUES
+from static.constants import PAYMENT_METHOD_VALUES
 from generators import gen_payment_method_row
 
 if TYPE_CHECKING:

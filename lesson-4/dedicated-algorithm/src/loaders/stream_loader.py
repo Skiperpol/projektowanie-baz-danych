@@ -5,7 +5,7 @@ import random
 import time
 from collections import defaultdict
 from typing import Dict, List, Optional
-from db import DB
+from utils.db import DB
 from .entities import ENTITY_LOADERS
 from .entities.category_helper import CategoryHelper
 
