@@ -9,33 +9,24 @@ from utils.db import DB
 from .entities import ENTITY_LOADERS
 from .entities.category_helper import CategoryHelper
 
-
 class StreamLoader:
     def __init__(self, db: DB, row_counts: Dict[str, int]):
         self.db = db
         self.row_counts = row_counts
         self.ps_conn = self.db.psycopg2_conn()
+
+        self._init_ids_and_mappings()
+        self._init_unique_sets()
+        self.category_helper = CategoryHelper(self)
+        random.seed(0)
+
+    def _init_ids_and_mappings(self):
+        """Initialize dictionaries storing IDs and mappings between objects."""
         self.generated_ids: Dict[str, List[int]] = {}
         self.product_price: Dict[int, str] = {}
         self.variant_to_product: Dict[int, int] = {}
         self.stock_for_variant: Dict[int, List[int]] = {}
         self.rows_inserted_per_table: Dict[str, int] = {}
-        self.unique_names: Dict[str, set] = {}
-        self.unique_counter = 0
-        self.option_pairs: set = set()
-        self.cartitem_pairs: set = set()
-        self.orderitem_pairs: set = set()
-        self.favoriteproduct_pairs: set = set()
-        self.productcategory_pairs: set = set()
-        self.productattribute_pairs: set = set()
-        self.variantoption_pairs: set = set()
-        self.review_pairs: set = set()
-        self.unique_skus: set = set()
-        self.sku_counter = 0
-        self.unique_emails: set = set()
-        self.email_counter = 0
-        self.unique_tracking_numbers: set = set()
-        self.tracking_counter = 0
         self.category_parent: Dict[int, Optional[int]] = {}
         self.category_children: Dict[int, List[int]] = defaultdict(list)
         self.category_depth: Dict[int, int] = {}
@@ -44,8 +35,29 @@ class StreamLoader:
         self.category_optional_pool: Dict[int, List[int]] = {}
         self.category_products_map: Dict[int, List[int]] = defaultdict(list)
         self.product_to_categories: Dict[int, List[int]] = defaultdict(list)
-        self.category_helper = CategoryHelper(self)
-        random.seed(0)
+
+    def _init_unique_sets(self):
+        """Initialize sets and counters to track unique values."""
+        # Unique names, emails, SKUs, tracking numbers
+        self.unique_names: Dict[str, set] = {}
+        self.unique_counter = 0
+        self.unique_skus: set = set()
+        self.sku_counter = 0
+        self.unique_emails: set = set()
+        self.email_counter = 0
+        self.unique_tracking_numbers: set = set()
+        self.tracking_counter = 0
+
+        # Sets to track unique many-to-many pairs
+        self.option_pairs: set = set()
+        self.cartitem_pairs: set = set()
+        self.orderitem_pairs: set = set()
+        self.favoriteproduct_pairs: set = set()
+        self.productcategory_pairs: set = set()
+        self.productattribute_pairs: set = set()
+        self.variantoption_pairs: set = set()
+        self.review_pairs: set = set()
+
 
     def _ensure_category_metadata(self):
         self.category_helper.ensure_category_metadata()

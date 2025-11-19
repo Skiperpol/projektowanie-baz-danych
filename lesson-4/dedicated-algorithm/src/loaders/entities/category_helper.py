@@ -72,29 +72,25 @@ class CategoryHelper:
         self.loader.category_depth[category_id] = depth
         return depth
 
-    def build_category_shared_attributes(self, attribute_ids: List[int]):
-        """Build shared attributes for each category based on hierarchy."""
-        if self.loader.category_shared_attributes or not attribute_ids:
-            return
-        if not self.loader.category_parent:
-            self.ensure_category_metadata()
-        for category_id in self.loader.category_order_cache:
-            parent_id = self.loader.category_parent.get(category_id)
-            parent_shared_list = self.loader.category_shared_attributes.get(parent_id, [])
-            parent_attrs = set(parent_shared_list)
-            range_to_use = (
-                self.root_shared_attr_range if parent_id is None else self.child_additional_attr_range
-            )
-            min_extra, max_extra = range_to_use
-            extra_count = random.randint(min_extra, max_extra) if max_extra > 0 else 0
-            available = [aid for aid in attribute_ids if aid not in parent_attrs]
-            if len(available) < extra_count:
-                available = attribute_ids[:]
-            extra_attrs = random.sample(available, extra_count) if extra_count > 0 and available else []
-            combined = list(dict.fromkeys([*parent_shared_list, *extra_attrs]))
-            if not combined and attribute_ids:
-                combined = [random.choice(attribute_ids)]
-            self.loader.category_shared_attributes[category_id] = combined
+def build_category_shared_attributes(self, attribute_ids: List[int]):
+    """Build shared attributes for each category based on hierarchy."""
+    if self.loader.category_shared_attributes or not attribute_ids:
+        return
+    if not self.loader.category_parent:
+        self.ensure_category_metadata()
+
+    for category_id in self.loader.category_order_cache:
+        parent_id = self.loader.category_parent.get(category_id)
+        parent_shared_list = self._get_parent_attributes(parent_id)
+        parent_attrs = set(parent_shared_list)
+        extra_attribute_count = self._compute_extra_attribute_count(parent_id)
+        extra_attrs = self._pick_extra_attributes(attribute_ids, parent_attrs, extra_attribute_count)
+
+        combined = list(dict.fromkeys([*parent_shared_list, *extra_attrs]))
+        if not combined and attribute_ids:
+            combined = [random.choice(attribute_ids)]
+
+        self.loader.category_shared_attributes[category_id] = combined
 
     def get_optional_attrs_for_category(self, category_id: int, attribute_ids: List[int]) -> List[int]:
         """Get optional attributes pool for a category."""
@@ -139,6 +135,22 @@ class CategoryHelper:
         self.loader.category_products_map[category_id].append(product_id)
         self.loader.product_to_categories[product_id].append(category_id)
 
+    def _get_parent_attributes(self, parent_id: Optional[int]) -> List[int]:
+        """Return shared attributes of the parent category (empty list if no parent)."""
+        return self.loader.category_shared_attributes.get(parent_id, [])
+
+    def _compute_extra_attribute_count(self, parent_id: Optional[int]) -> int:
+        """Compute how many extra attributes to assign based on parent."""
+        range_to_use = self.root_shared_attr_range if parent_id is None else self.child_additional_attr_range
+        min_extra, max_extra = range_to_use
+        return random.randint(min_extra, max_extra) if max_extra > 0 else 0
+
+    def _pick_extra_attributes(self, attribute_ids: List[int], parent_attrs: set, extra_count: int) -> List[int]:
+        """Select extra attributes that are not already in parent's shared attributes."""
+        available = [aid for aid in attribute_ids if aid not in parent_attrs]
+        if len(available) < extra_count:
+            available = attribute_ids[:]
+        return random.sample(available, extra_count) if extra_count > 0 and available else []
 
 __all__ = ["CategoryHelper"]
 

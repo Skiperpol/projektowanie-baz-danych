@@ -2,12 +2,12 @@ from typing import Dict, List, Tuple
 
 
 class ValidationError(Exception):
-    """Błąd walidacji konfiguracji."""
+    """Configuration validation error."""
     pass
 
 
 class RowCountsValidator:
-    """Walidator sprawdzający spójność row_counts.json."""
+    """Validator checking consistency of row_counts.json."""
 
     def __init__(self, row_counts: Dict[str, int]):
         self.row_counts = row_counts
@@ -16,7 +16,7 @@ class RowCountsValidator:
 
     def validate_all(self) -> Tuple[bool, List[str], List[str]]:
         """
-        Wykonuje wszystkie walidacje.
+        Performs all validations.
         Returns: (is_valid, errors, warnings)
         """
         self.errors.clear()
@@ -32,13 +32,13 @@ class RowCountsValidator:
         return is_valid, self.errors, self.warnings
 
     def _validate_basic_requirements(self):
-        """Podstawowe wymagania - wartości nieujemne, sensowne liczby."""
+        """Basic requirements - non-negative values, reasonable numbers."""
         for table, count in self.row_counts.items():
             if count < 0:
                 self.errors.append(f"{table}: Liczba nie może być ujemna (obecnie: {count})")
 
     def _validate_foreign_key_relationships(self):
-        """Walidacja relacji kluczy obcych - czy są wystarczające źródła."""
+        """Validation of foreign key relationships - whether there are sufficient sources."""
         if self.row_counts.get("Cart", 0) > self.row_counts.get("User", 0):
             self.warnings.append(
                 f"Cart ({self.row_counts.get('Cart', 0)}) > User ({self.row_counts.get('User', 0)}) - "
@@ -64,7 +64,7 @@ class RowCountsValidator:
             )
 
     def _validate_unique_pair_constraints(self):
-        """Walidacja ograniczeń unikalnych par."""
+        """Validation of unique pair constraints."""
         max_orderitem = self.row_counts.get("Order", 0) * self.row_counts.get("StockItem", 0)
         requested_orderitem = self.row_counts.get("OrderItem", 0)
         if requested_orderitem > max_orderitem:
@@ -128,8 +128,8 @@ class RowCountsValidator:
 
     def _validate_category_attribute_propagation(self):
         """
-        Walidacja wymagań dotyczących propagacji atrybutów w kategoriach.
-        Produkty w podkategoriach powinny mieć wszystkie wspólne atrybuty z kategorii nadrzędnej.
+        Validation of requirements for attribute propagation in categories.
+        Products in subcategories should have all common attributes from the parent category.
         """
         product_count = self.row_counts.get("Product", 0)
         attribute_count = self.row_counts.get("Attribute", 0)
@@ -140,7 +140,7 @@ class RowCountsValidator:
             return
 
         min_attributes_per_product = 3
-        max_attributes_per_product = min(attribute_count, 10)
+        max_attributes_per_product = max(attribute_count, 10)
 
         min_required = product_count * min_attributes_per_product
         max_reasonable = product_count * max_attributes_per_product
@@ -162,9 +162,15 @@ class RowCountsValidator:
                 f"Attribute ({attribute_count}) < Category ({category_count}) - "
                 "niektóre kategorie mogą mieć bardzo mało atrybutów"
             )
+        if max_reasonable < productattribute_count:
+            self.warnings.append(
+                f"ProductAttribute ({productattribute_count}) > max możliwych ({max_reasonable}) = "
+                f"Product ({product_count}) * {max_attributes_per_product} (max atrybutów na produkt). "
+                "Produkty w podkategoriach mogą otrzymać więcej atrybutów niż jest dostępnych"
+            )
 
     def _validate_reasonable_ratios(self):
-        """Walidacja rozsądnych proporcji między tabelami."""
+        """Validation of reasonable ratios between tables."""
         option_count = self.row_counts.get("Option", 0)
         attribute_count = self.row_counts.get("Attribute", 0)
         if attribute_count > 0:
