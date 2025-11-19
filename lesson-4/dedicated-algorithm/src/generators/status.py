@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Tuple
 
-from constants import STATUS_VALUES
+from static.constants import STATUS_VALUES
 
 
 def gen_status_row(counter: int = 0) -> Tuple[str]:

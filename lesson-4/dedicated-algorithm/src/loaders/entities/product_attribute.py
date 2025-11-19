@@ -44,56 +44,88 @@ def load_productattribute(loader: "StreamLoader", table_name: str, columns, coun
 
     def rows():
         nonlocal rows_generated
+        
+        shared_attrs_assigned = 0
         for category_id in categories_to_process:
             shared_attrs = loader.category_shared_attributes.get(category_id, [])
             if not shared_attrs:
                 continue
-            shared_count = len(shared_attrs)
-            if shared_count == 0:
-                continue
             products = loader.category_products_map.get(category_id, [])
             if not products:
                 continue
-            optional_pool = loader._get_optional_attrs_for_category(category_id, attribute_ids)
+            
             for product_id in products:
-                if rows_generated >= count:
-                    return
-                if rows_generated + shared_count > count:
-                    continue
-                optional_count = loader._calculate_optional_count(shared_count)
-                optional_count = loader._bound_optional_count(optional_count)
-                assigned_attrs = []
                 for attr_id in shared_attrs:
                     if rows_generated >= count:
-                        return
+                        break
                     pair = (product_id, attr_id)
                     if pair in loader.productattribute_pairs:
                         continue
                     loader.productattribute_pairs.add(pair)
-                    assigned_attrs.append(attr_id)
                     rows_generated += 1
+                    shared_attrs_assigned += 1
                     yield gen_productattribute_row(product_id, attr_id)
+                
                 if rows_generated >= count:
-                    return
-                if optional_count <= 0:
-                    continue
+                    break
+            
+            if rows_generated >= count:
+                break
+        
+        if shared_attrs_assigned > 0:
+            print(f"  ✓ Faza 1 zakończona: przypisano {shared_attrs_assigned:,} wspólnych atrybutów (propagacja w dół drzewa)")
+        
+        optional_attrs_assigned = 0
+        for category_id in categories_to_process:
+            if rows_generated >= count:
+                break
+            
+            shared_attrs = loader.category_shared_attributes.get(category_id, [])
+            if not shared_attrs:
+                continue
+            shared_count = len(shared_attrs)
+            products = loader.category_products_map.get(category_id, [])
+            if not products:
+                continue
+            
+            optional_pool = loader._get_optional_attrs_for_category(category_id, attribute_ids)
+            optional_count = loader._calculate_optional_count(shared_count)
+            optional_count = loader._bound_optional_count(optional_count)
+            
+            if optional_count <= 0:
+                continue
+            
+            for product_id in products:
+                if rows_generated >= count:
+                    break
+                    
+                assigned_attrs = [
+                    aid for aid in attribute_ids 
+                    if (product_id, aid) in loader.productattribute_pairs
+                ]
+                
                 available_optional = [aid for aid in optional_pool if aid not in assigned_attrs]
                 if len(available_optional) < optional_count:
                     available_optional = [aid for aid in attribute_ids if aid not in assigned_attrs]
                 if not available_optional:
                     continue
+                
                 sample_size = min(optional_count, len(available_optional))
                 optional_attrs = random.sample(available_optional, sample_size)
+                
                 for attr_id in optional_attrs:
                     if rows_generated >= count:
-                        return
+                        break
                     pair = (product_id, attr_id)
                     if pair in loader.productattribute_pairs:
                         continue
                     loader.productattribute_pairs.add(pair)
-                    assigned_attrs.append(attr_id)
                     rows_generated += 1
+                    optional_attrs_assigned += 1
                     yield gen_productattribute_row(product_id, attr_id)
+        
+        if optional_attrs_assigned > 0:
+            print(f"  ✓ Faza 2 zakończona: przypisano {optional_attrs_assigned:,} opcjonalnych atrybutów")
         if rows_generated < count:
             max_attempts = max(count * 20, 5000)
             attempts = 0

@@ -4,7 +4,7 @@ import random
 import uuid
 from typing import Optional, Sequence, Set, Tuple
 
-from constants import USER_ROLES
+from static.constants import USER_ROLES
 from .base import fake
 
 

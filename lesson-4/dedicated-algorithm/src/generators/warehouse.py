@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional, Sequence, Set, Tuple
 
-from constants import WAREHOUSE_VALUES
+from static.constants import WAREHOUSE_VALUES
 
 
 def gen_warehouse_row(

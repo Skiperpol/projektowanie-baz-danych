@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from constants import WAREHOUSE_VALUES
+from static.constants import WAREHOUSE_VALUES
 from generators import gen_warehouse_row
 
 if TYPE_CHECKING:

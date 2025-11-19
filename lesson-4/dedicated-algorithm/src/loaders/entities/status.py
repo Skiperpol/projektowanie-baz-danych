@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from constants import STATUS_VALUES
+from static.constants import STATUS_VALUES
 from generators import gen_status_row
 
 if TYPE_CHECKING:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from constants import DELIVERY_METHOD_VALUES
+from static.constants import DELIVERY_METHOD_VALUES
 from generators import gen_delivery_method_row
 
 if TYPE_CHECKING:
