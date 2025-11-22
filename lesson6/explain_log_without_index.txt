@@ -1,0 +1,849 @@
+
+
+#########################################################
+### 1. Średnia Wartość Zamówienia (AOV) w Ostatnim Miesiącu
+#########################################################
+
+Aggregate  (cost=8119.95..8119.96 rows=1 width=32) (actual time=393.347..469.792 rows=1 loops=1)
+  ->  Finalize GroupAggregate  (cost=7933.90..8102.83 rows=1370 width=36) (actual time=391.973..469.676 rows=1371 loops=1)
+        Group Key: o.id
+        ->  Gather Merge  (cost=7933.90..8077.14 rows=1142 width=36) (actual time=391.964..468.895 rows=1371 loops=1)
+              Workers Planned: 2
+              Workers Launched: 2
+              ->  Partial GroupAggregate  (cost=6933.88..6945.30 rows=571 width=36) (actual time=378.252..378.546 rows=457 loops=3)
+                    Group Key: o.id
+                    ->  Sort  (cost=6933.88..6935.30 rows=571 width=10) (actual time=377.588..377.622 rows=467 loops=3)
+                          Sort Key: o.id
+                          Sort Method: quicksort  Memory: 37kB
+                          Worker 0:  Sort Method: quicksort  Memory: 40kB
+                          Worker 1:  Sort Method: quicksort  Memory: 40kB
+                          ->  Hash Join  (cost=578.00..6907.73 rows=571 width=10) (actual time=41.712..377.226 rows=467 loops=3)
+                                Hash Cond: (o.id = oi.order_id)
+                                ->  Parallel Seq Scan on "Order" o  (cost=0.00..6252.67 rows=11417 width=4) (actual time=0.025..333.489 rows=9258 loops=3)
+                                      Filter: (order_date >= (now() - '1 mon'::interval))
+                                      Rows Removed by Filter: 124076
+                                ->  Hash  (cost=328.00..328.00 rows=20000 width=10) (actual time=40.291..40.291 rows=20000 loops=3)
+                                      Buckets: 32768  Batches: 1  Memory Usage: 1116kB
+                                      ->  Seq Scan on "OrderItem" oi  (cost=0.00..328.00 rows=20000 width=10) (actual time=0.029..34.715 rows=20000 loops=3)
+Planning Time: 11.006 ms
+Execution Time: 470.457 ms
+
+
+#########################################################
+### 2. Średnia wartość zamówienia per użytkownik
+#########################################################
+
+Sort  (cost=16066.87..16115.61 rows=19495 width=50) (actual time=4758.212..4803.379 rows=19296 loops=1)
+  Sort Key: (round(avg(order_totals.total_price), 2)) DESC
+  Sort Method: quicksort  Memory: 1612kB
+  ->  Finalize HashAggregate  (cost=14385.35..14677.77 rows=19495 width=50) (actual time=4713.301..4782.954 rows=19296 loops=1)
+        Group Key: u.id
+        Batches: 5  Memory Usage: 8241kB  Disk Usage: 224kB
+        ->  Gather  (cost=12537.36..14263.50 rows=16246 width=50) (actual time=4551.699..4673.629 rows=19426 loops=1)
+              Workers Planned: 2
+              Workers Launched: 2
+              ->  Partial HashAggregate  (cost=11537.36..11638.90 rows=8123 width=50) (actual time=4410.711..4418.286 rows=6475 loops=3)
+                    Group Key: u.id
+                    Batches: 1  Memory Usage: 3217kB
+                    Worker 0:  Batches: 1  Memory Usage: 2961kB
+                    Worker 1:  Batches: 1  Memory Usage: 2961kB
+                    ->  Nested Loop  (cost=1110.75..11496.75 rows=8123 width=50) (actual time=136.059..4369.687 rows=6498 loops=3)
+                          ->  Hash Join  (cost=1110.33..6550.49 rows=8123 width=36) (actual time=95.770..245.667 rows=6498 loops=3)
+                                Hash Cond: (o.id = order_totals.order_id)
+                                ->  Parallel Seq Scan on "Order" o  (cost=0.00..5002.67 rows=166667 width=8) (actual time=0.010..63.468 rows=133333 loops=3)
+                                ->  Hash  (cost=866.64..866.64 rows=19495 width=36) (actual time=91.640..92.915 rows=19495 loops=3)
+                                      Buckets: 32768  Batches: 1  Memory Usage: 1094kB
+                                      ->  Subquery Scan on order_totals  (cost=428.00..866.64 rows=19495 width=36) (actual time=61.902..80.228 rows=19495 loops=3)
+                                            ->  HashAggregate  (cost=428.00..671.69 rows=19495 width=36) (actual time=61.664..76.496 rows=19495 loops=3)
+                                                  Group Key: oi.order_id
+                                                  Batches: 1  Memory Usage: 7953kB
+                                                  Worker 0:  Batches: 1  Memory Usage: 7953kB
+                                                  Worker 1:  Batches: 1  Memory Usage: 7953kB
+                                                  ->  Seq Scan on "OrderItem" oi  (cost=0.00..328.00 rows=20000 width=10) (actual time=4.039..15.269 rows=20000 loops=3)
+                          ->  Index Scan using "User_pkey" on "User" u  (cost=0.42..0.61 rows=1 width=18) (actual time=0.630..0.630 rows=1 loops=19495)
+                                Index Cond: (id = o.user_id)
+Planning Time: 17.250 ms
+Execution Time: 4841.465 ms
+
+
+#########################################################
+### 3. Top 10 Najlepiej Sprzedających Się Produktów (wg. Ilości Sprzedanych Jednostek) w Ostatnim Kwartale
+#########################################################
+
+Limit  (cost=12447.71..12447.73 rows=10 width=46) (actual time=1970.071..2091.083 rows=10 loops=1)
+  ->  Sort  (cost=12447.71..12459.58 rows=4747 width=46) (actual time=1970.066..2091.073 rows=10 loops=1)
+        Sort Key: (count(*)) DESC
+        Sort Method: top-N heapsort  Memory: 26kB
+        ->  Finalize HashAggregate  (cost=12297.66..12345.13 rows=4747 width=46) (actual time=1967.573..2089.523 rows=4052 loops=1)
+              Group Key: p.name, m.name
+              Batches: 1  Memory Usage: 721kB
+              ->  Gather  (cost=11852.61..12267.99 rows=3956 width=46) (actual time=1925.283..2073.877 rows=4498 loops=1)
+                    Workers Planned: 2
+                    Workers Launched: 2
+                    ->  Partial HashAggregate  (cost=10852.61..10872.39 rows=1978 width=46) (actual time=1534.196..1535.022 rows=1499 loops=3)
+                          Group Key: p.name, m.name
+                          Batches: 1  Memory Usage: 369kB
+                          Worker 0:  Batches: 1  Memory Usage: 369kB
+                          Worker 1:  Batches: 1  Memory Usage: 369kB
+                          ->  Hash Join  (cost=584.38..10837.77 rows=1978 width=38) (actual time=110.789..1506.972 rows=1574 loops=3)
+                                Hash Cond: (p.manufacturer_id = m.id)
+                                ->  Nested Loop  (cost=579.00..10827.06 rows=1978 width=17) (actual time=108.016..1501.302 rows=1574 loops=3)
+                                      ->  Nested Loop  (cost=578.71..10174.11 rows=1978 width=4) (actual time=85.472..1373.534 rows=1574 loops=3)
+                                            ->  Nested Loop  (cost=578.42..9552.77 rows=1978 width=4) (actual time=67.445..1240.225 rows=1574 loops=3)
+                                                  ->  Hash Join  (cost=578.00..7097.68 rows=1978 width=4) (actual time=22.534..133.703 rows=1574 loops=3)
+                                                        Hash Cond: (o.id = oi.order_id)
+                                                        ->  Parallel Seq Scan on "Order" o  (cost=0.00..6252.67 rows=39557 width=4) (actual time=0.011..98.700 rows=31488 loops=3)
+                                                              Filter: (order_date >= (now() - '3 mons'::interval))
+                                                              Rows Removed by Filter: 101846
+                                                        ->  Hash  (cost=328.00..328.00 rows=20000 width=8) (actual time=15.433..15.434 rows=20000 loops=3)
+                                                              Buckets: 32768  Batches: 1  Memory Usage: 1038kB
+                                                              ->  Seq Scan on "OrderItem" oi  (cost=0.00..328.00 rows=20000 width=8) (actual time=0.037..2.479 rows=20000 loops=3)
+                                                  ->  Index Scan using "StockItem_pkey" on "StockItem" si  (cost=0.42..1.24 rows=1 width=8) (actual time=0.699..0.699 rows=1 loops=4723)
+                                                        Index Cond: (id = oi.stock_item_id)
+                                            ->  Index Scan using "Variant_pkey" on "Variant" v  (cost=0.29..0.31 rows=1 width=8) (actual time=0.080..0.080 rows=1 loops=4723)
+                                                  Index Cond: (id = si.variant_id)
+                                      ->  Index Scan using "Product_pkey" on "Product" p  (cost=0.29..0.33 rows=1 width=21) (actual time=0.078..0.078 rows=1 loops=4723)
+                                            Index Cond: (id = v.product_id)
+                                ->  Hash  (cost=3.50..3.50 rows=150 width=29) (actual time=0.697..0.698 rows=150 loops=3)
+                                      Buckets: 1024  Batches: 1  Memory Usage: 18kB
+                                      ->  Seq Scan on "Manufacturer" m  (cost=0.00..3.50 rows=150 width=29) (actual time=0.228..0.249 rows=150 loops=3)
+Planning Time: 53.747 ms
+Execution Time: 2095.495 ms
+
+
+#########################################################
+### 4. Top 5 produktów z najwięcej recenzjami
+#########################################################
+
+Limit  (cost=1792.59..1792.61 rows=5 width=25) (actual time=92.293..92.298 rows=5 loops=1)
+  ->  Sort  (cost=1792.59..1842.59 rows=20000 width=25) (actual time=92.292..92.296 rows=5 loops=1)
+        Sort Key: (COALESCE(r.count, '0'::bigint)) DESC
+        Sort Method: top-N heapsort  Memory: 25kB
+        ->  Hash Left Join  (cost=969.89..1460.40 rows=20000 width=25) (actual time=81.470..88.591 rows=20000 loops=1)
+              Hash Cond: (p.id = r.product_id)
+              ->  Seq Scan on "Product" p  (cost=0.00..438.00 rows=20000 width=17) (actual time=0.012..1.487 rows=20000 loops=1)
+              ->  Hash  (cost=812.24..812.24 rows=12612 width=12) (actual time=81.446..81.449 rows=12612 loops=1)
+                    Buckets: 16384  Batches: 1  Memory Usage: 670kB
+                    ->  Subquery Scan on r  (cost=560.00..812.24 rows=12612 width=12) (actual time=66.548..70.408 rows=12612 loops=1)
+                          ->  HashAggregate  (cost=560.00..686.12 rows=12612 width=12) (actual time=66.548..69.234 rows=12612 loops=1)
+                                Group Key: "Review".product_id
+                                Batches: 1  Memory Usage: 1425kB
+                                ->  Seq Scan on "Review"  (cost=0.00..460.00 rows=20000 width=4) (actual time=2.486..55.711 rows=20000 loops=1)
+Planning Time: 13.796 ms
+Execution Time: 92.825 ms
+
+
+#########################################################
+### 5. Całkowity Przychód Pogrupowany Miesięcznie za Ostatni Rok
+#########################################################
+
+Finalize GroupAggregate  (cost=9719.19..11975.47 rows=17309 width=36) (actual time=177.180..268.935 rows=11 loops=1)
+  Group Key: ((date_trunc('month'::text, o.order_date))::date)
+  ->  Gather Merge  (cost=9719.19..11564.38 rows=14424 width=36) (actual time=176.788..267.764 rows=33 loops=1)
+        Workers Planned: 2
+        Workers Launched: 2
+        ->  Partial GroupAggregate  (cost=8719.17..8899.47 rows=7212 width=36) (actual time=98.027..99.372 rows=11 loops=3)
+              Group Key: ((date_trunc('month'::text, o.order_date))::date)
+              ->  Sort  (cost=8719.17..8737.20 rows=7212 width=10) (actual time=96.411..96.933 rows=5760 loops=3)
+                    Sort Key: ((date_trunc('month'::text, o.order_date))::date) DESC
+                    Sort Method: quicksort  Memory: 789kB
+                    Worker 0:  Sort Method: quicksort  Memory: 165kB
+                    Worker 1:  Sort Method: quicksort  Memory: 164kB
+                    ->  Hash Join  (cost=578.00..8257.02 rows=7212 width=10) (actual time=12.508..92.677 rows=5760 loops=3)
+                          Hash Cond: (o.id = oi.order_id)
+                          ->  Parallel Seq Scan on "Order" o  (cost=0.00..6669.33 rows=144241 width=12) (actual time=0.017..55.931 rows=115772 loops=3)
+                                Filter: (order_date >= (date_trunc('year'::text, now()) - '00:00:00'::interval))
+                                Rows Removed by Filter: 17562
+                          ->  Hash  (cost=328.00..328.00 rows=20000 width=10) (actual time=11.928..11.929 rows=20000 loops=3)
+                                Buckets: 32768  Batches: 1  Memory Usage: 1116kB
+                                ->  Seq Scan on "OrderItem" oi  (cost=0.00..328.00 rows=20000 width=10) (actual time=0.028..3.648 rows=20000 loops=3)
+Planning Time: 6.549 ms
+Execution Time: 274.819 ms
+
+
+#########################################################
+### 6. Produkty najczęściej dodawane do ulubionych
+#########################################################
+
+Limit  (cost=14382.58..14382.60 rows=10 width=25) (actual time=752.074..865.217 rows=10 loops=1)
+  ->  Sort  (cost=14382.58..14432.58 rows=20000 width=25) (actual time=750.869..864.006 rows=10 loops=1)
+        Sort Key: (count(f.id)) DESC
+        Sort Method: top-N heapsort  Memory: 26kB
+        ->  Finalize HashAggregate  (cost=13750.38..13950.38 rows=20000 width=25) (actual time=741.937..859.445 rows=20000 loops=1)
+              Group Key: p.id
+              Batches: 1  Memory Usage: 2577kB
+              ->  Gather  (cost=9350.38..13550.38 rows=40000 width=25) (actual time=596.753..776.163 rows=59998 loops=1)
+                    Workers Planned: 2
+                    Workers Launched: 2
+                    ->  Partial HashAggregate  (cost=8350.38..8550.38 rows=20000 width=25) (actual time=514.646..522.316 rows=19999 loops=3)
+                          Group Key: p.id
+                          Batches: 1  Memory Usage: 2577kB
+                          Worker 0:  Batches: 1  Memory Usage: 2577kB
+                          Worker 1:  Batches: 1  Memory Usage: 2577kB
+                          ->  Hash Join  (cost=688.00..7100.38 rows=250000 width=21) (actual time=15.884..421.978 rows=200000 loops=3)
+                                Hash Cond: (f.product_id = p.id)
+                                ->  Parallel Seq Scan on "FavoriteProduct" f  (cost=0.00..5756.00 rows=250000 width=8) (actual time=4.832..327.759 rows=200000 loops=3)
+                                ->  Hash  (cost=438.00..438.00 rows=20000 width=17) (actual time=10.863..11.870 rows=20000 loops=3)
+                                      Buckets: 32768  Batches: 1  Memory Usage: 1215kB
+                                      ->  Seq Scan on "Product" p  (cost=0.00..438.00 rows=20000 width=17) (actual time=0.034..3.806 rows=20000 loops=3)
+Planning Time: 10.225 ms
+Execution Time: 867.001 ms
+
+
+#########################################################
+### 7. Dostępny Stan Magazynowy Wariantów Produktu Pogrupowany po Magazynach
+#########################################################
+
+GroupAggregate  (cost=37640.01..42664.89 rows=223328 width=61) (actual time=1365.448..1735.743 rows=178012 loops=1)
+  Group Key: p.name, w.name, v.sku
+  ->  Sort  (cost=37640.01..38198.33 rows=223328 width=57) (actual time=1362.735..1640.418 rows=223971 loops=1)
+        Sort Key: p.name, w.name, v.sku
+        Sort Method: external merge  Disk: 15248kB
+        ->  Hash Join  (cost=2189.15..9398.65 rows=223328 width=57) (actual time=28.717..566.923 rows=223971 loops=1)
+              Hash Cond: (si.warehouse_id = w.id)
+              ->  Hash Join  (cost=2144.50..8766.15 rows=223328 width=44) (actual time=28.689..524.933 rows=223971 loops=1)
+                    Hash Cond: (v.product_id = p.id)
+                    ->  Hash Join  (cost=1456.50..7491.79 rows=223328 width=35) (actual time=23.003..438.131 rows=223971 loops=1)
+                          Hash Cond: (si.variant_id = v.id)
+                          ->  Seq Scan on "StockItem" si  (cost=0.00..5449.00 rows=223328 width=12) (actual time=0.013..310.785 rows=223971 loops=1)
+                                Filter: (shipment_id IS NULL)
+                                Rows Removed by Filter: 96029
+                          ->  Hash  (cost=869.00..869.00 rows=47000 width=31) (actual time=22.971..23.688 rows=47000 loops=1)
+                                Buckets: 65536  Batches: 1  Memory Usage: 3450kB
+                                ->  Seq Scan on "Variant" v  (cost=0.00..869.00 rows=47000 width=31) (actual time=0.006..10.418 rows=47000 loops=1)
+                    ->  Hash  (cost=438.00..438.00 rows=20000 width=17) (actual time=5.674..5.675 rows=20000 loops=1)
+                          Buckets: 32768  Batches: 1  Memory Usage: 1245kB
+                          ->  Seq Scan on "Product" p  (cost=0.00..438.00 rows=20000 width=17) (actual time=0.006..2.410 rows=20000 loops=1)
+              ->  Hash  (cost=25.40..25.40 rows=1540 width=21) (actual time=0.020..0.020 rows=10 loops=1)
+                    Buckets: 2048  Batches: 1  Memory Usage: 17kB
+                    ->  Seq Scan on "Warehouse" w  (cost=0.00..25.40 rows=1540 width=21) (actual time=0.014..0.015 rows=10 loops=1)
+Planning Time: 19.164 ms
+Execution Time: 1760.052 ms
+
+
+#########################################################
+### 8. Stan magazynowy per produkt
+#########################################################
+
+Sort  (cost=11494.90..11544.43 rows=19812 width=21) (actual time=317.517..320.339 rows=17916 loops=1)
+  Sort Key: (count(si.id)) DESC
+  Sort Method: quicksort  Memory: 1482kB
+  ->  HashAggregate  (cost=9882.79..10080.91 rows=19812 width=21) (actual time=309.561..313.387 rows=17916 loops=1)
+        Group Key: p.name
+        Batches: 1  Memory Usage: 2065kB
+        ->  Hash Join  (cost=2144.50..8766.15 rows=223328 width=17) (actual time=19.277..227.840 rows=223971 loops=1)
+              Hash Cond: (v.product_id = p.id)
+              ->  Hash Join  (cost=1456.50..7491.79 rows=223328 width=8) (actual time=12.466..147.201 rows=223971 loops=1)
+                    Hash Cond: (si.variant_id = v.id)
+                    ->  Seq Scan on "StockItem" si  (cost=0.00..5449.00 rows=223328 width=8) (actual time=0.014..38.800 rows=223971 loops=1)
+                          Filter: (shipment_id IS NULL)
+                          Rows Removed by Filter: 96029
+                    ->  Hash  (cost=869.00..869.00 rows=47000 width=8) (actual time=12.431..12.433 rows=47000 loops=1)
+                          Buckets: 65536  Batches: 1  Memory Usage: 2348kB
+                          ->  Seq Scan on "Variant" v  (cost=0.00..869.00 rows=47000 width=8) (actual time=0.006..5.191 rows=47000 loops=1)
+              ->  Hash  (cost=438.00..438.00 rows=20000 width=17) (actual time=6.794..6.795 rows=20000 loops=1)
+                    Buckets: 32768  Batches: 1  Memory Usage: 1245kB
+                    ->  Seq Scan on "Product" p  (cost=0.00..438.00 rows=20000 width=17) (actual time=1.085..3.454 rows=20000 loops=1)
+Planning Time: 38.707 ms
+Execution Time: 340.121 ms
+
+
+#########################################################
+### 9. Najpopularniejsze Kategorie (wg. Całkowitego Przychodu)
+#########################################################
+
+Limit  (cost=12371.00..12371.02 rows=10 width=44) (actual time=733.265..825.756 rows=10 loops=1)
+  ->  Sort  (cost=12371.00..12371.37 rows=150 width=44) (actual time=733.264..825.749 rows=10 loops=1)
+        Sort Key: (sum(oi.unit_price)) DESC
+        Sort Method: top-N heapsort  Memory: 26kB
+        ->  Finalize GroupAggregate  (cost=12328.63..12367.76 rows=150 width=44) (actual time=732.189..825.008 rows=150 loops=1)
+              Group Key: c.name
+              ->  Gather Merge  (cost=12328.63..12363.63 rows=300 width=44) (actual time=732.172..824.794 rows=450 loops=1)
+                    Workers Planned: 2
+                    Workers Launched: 2
+                    ->  Sort  (cost=11328.61..11328.98 rows=150 width=44) (actual time=364.617..365.451 rows=150 loops=3)
+                          Sort Key: c.name
+                          Sort Method: quicksort  Memory: 39kB
+                          Worker 0:  Sort Method: quicksort  Memory: 39kB
+                          Worker 1:  Sort Method: quicksort  Memory: 39kB
+                          ->  Partial HashAggregate  (cost=11321.31..11323.19 rows=150 width=44) (actual time=357.345..357.410 rows=150 loops=3)
+                                Group Key: c.name
+                                Batches: 1  Memory Usage: 96kB
+                                Worker 0:  Batches: 1  Memory Usage: 96kB
+                                Worker 1:  Batches: 1  Memory Usage: 96kB
+                                ->  Hash Join  (cost=8362.48..11112.98 rows=41667 width=18) (actual time=111.155..330.735 rows=33334 loops=3)
+                                      Hash Cond: (pc.category_id = c.id)
+                                      ->  Parallel Hash Join  (cost=8357.10..10995.13 rows=41667 width=10) (actual time=95.947..303.027 rows=33334 loops=3)
+                                            Hash Cond: (pc.product_id = p.id)
+                                            ->  Parallel Index Only Scan using uq_prodcat_product_category on "ProductCategory" pc  (cost=0.29..2236.96 rows=41667 width=8) (actual time=36.619..224.130 rows=33333 loops=3)
+                                                  Heap Fetches: 0
+                                            ->  Parallel Hash  (cost=8209.75..8209.75 rows=11765 width=14) (actual time=53.293..53.297 rows=6667 loops=3)
+                                                  Buckets: 32768  Batches: 1  Memory Usage: 1216kB
+                                                  ->  Hash Join  (cost=2722.50..8209.75 rows=11765 width=14) (actual time=24.422..130.259 rows=20000 loops=1)
+                                                        Hash Cond: (v.product_id = p.id)
+                                                        ->  Hash Join  (cost=2034.50..7490.85 rows=11765 width=10) (actual time=19.520..116.388 rows=20000 loops=1)
+                                                              Hash Cond: (si.variant_id = v.id)
+                                                              ->  Hash Join  (cost=578.00..6003.47 rows=11765 width=10) (actual time=6.857..93.935 rows=20000 loops=1)
+                                                                    Hash Cond: (si.id = oi.stock_item_id)
+                                                                    ->  Parallel Seq Scan on "StockItem" si  (cost=0.00..4131.35 rows=188235 width=8) (actual time=0.005..25.592 rows=320000 loops=1)
+                                                                    ->  Hash  (cost=328.00..328.00 rows=20000 width=10) (actual time=5.718..5.720 rows=20000 loops=1)
+                                                                          Buckets: 32768  Batches: 1  Memory Usage: 1116kB
+                                                                          ->  Seq Scan on "OrderItem" oi  (cost=0.00..328.00 rows=20000 width=10) (actual time=0.013..2.287 rows=20000 loops=1)
+                                                              ->  Hash  (cost=869.00..869.00 rows=47000 width=8) (actual time=12.640..12.640 rows=47000 loops=1)
+                                                                    Buckets: 65536  Batches: 1  Memory Usage: 2348kB
+                                                                    ->  Seq Scan on "Variant" v  (cost=0.00..869.00 rows=47000 width=8) (actual time=0.014..5.131 rows=47000 loops=1)
+                                                        ->  Hash  (cost=438.00..438.00 rows=20000 width=4) (actual time=4.887..4.890 rows=20000 loops=1)
+                                                              Buckets: 32768  Batches: 1  Memory Usage: 960kB
+                                                              ->  Seq Scan on "Product" p  (cost=0.00..438.00 rows=20000 width=4) (actual time=0.014..2.105 rows=20000 loops=1)
+                                      ->  Hash  (cost=3.50..3.50 rows=150 width=16) (actual time=15.088..15.089 rows=150 loops=3)
+                                            Buckets: 1024  Batches: 1  Memory Usage: 16kB
+                                            ->  Seq Scan on "Category" c  (cost=0.00..3.50 rows=150 width=16) (actual time=13.393..13.585 rows=150 loops=3)
+Planning Time: 46.657 ms
+Execution Time: 834.574 ms
+
+
+#########################################################
+### 10. Liczba produktów per kategoria
+#########################################################
+
+Sort  (cost=2342.22..2342.59 rows=150 width=20) (actual time=254.098..254.109 rows=150 loops=1)
+  Sort Key: (count(pc.product_id)) DESC
+  Sort Method: quicksort  Memory: 30kB
+  ->  HashAggregate  (cost=2335.30..2336.80 rows=150 width=20) (actual time=254.035..254.064 rows=150 loops=1)
+        Group Key: c.name
+        Batches: 1  Memory Usage: 48kB
+        ->  Hash Right Join  (cost=5.38..1835.30 rows=100000 width=16) (actual time=3.431..233.468 rows=100000 loops=1)
+              Hash Cond: (pc.category_id = c.id)
+              ->  Seq Scan on "ProductCategory" pc  (cost=0.00..1560.00 rows=100000 width=8) (actual time=2.838..211.109 rows=100000 loops=1)
+              ->  Hash  (cost=3.50..3.50 rows=150 width=16) (actual time=0.066..0.068 rows=150 loops=1)
+                    Buckets: 1024  Batches: 1  Memory Usage: 16kB
+                    ->  Seq Scan on "Category" c  (cost=0.00..3.50 rows=150 width=16) (actual time=0.022..0.041 rows=150 loops=1)
+Planning Time: 12.211 ms
+Execution Time: 255.481 ms
+
+
+#########################################################
+### 11. Liczba zamówień per metoda płatności
+#########################################################
+
+Sort  (cost=7808.47..7808.49 rows=6 width=50) (actual time=141.003..228.589 rows=6 loops=1)
+  Sort Key: (sum(oi.unit_price)) DESC
+  Sort Method: quicksort  Memory: 25kB
+  ->  Finalize GroupAggregate  (cost=7806.80..7808.40 rows=6 width=50) (actual time=139.869..227.467 rows=6 loops=1)
+        Group Key: pm.name
+        ->  Gather Merge  (cost=7806.80..7808.20 rows=12 width=50) (actual time=139.269..225.741 rows=18 loops=1)
+              Workers Planned: 2
+              Workers Launched: 2
+              ->  Sort  (cost=6806.78..6806.79 rows=6 width=50) (actual time=66.538..66.543 rows=6 loops=3)
+                    Sort Key: pm.name
+                    Sort Method: quicksort  Memory: 25kB
+                    Worker 0:  Sort Method: quicksort  Memory: 25kB
+                    Worker 1:  Sort Method: quicksort  Memory: 25kB
+                    ->  Partial HashAggregate  (cost=6806.62..6806.70 rows=6 width=50) (actual time=57.757..57.764 rows=6 loops=3)
+                          Group Key: pm.name
+                          Batches: 1  Memory Usage: 24kB
+                          Worker 0:  Batches: 1  Memory Usage: 24kB
+                          Worker 1:  Batches: 1  Memory Usage: 24kB
+                          ->  Hash Join  (cost=579.13..6744.13 rows=8333 width=20) (actual time=12.105..55.014 rows=6667 loops=3)
+                                Hash Cond: (o.payment_method_id = pm.id)
+                                ->  Hash Join  (cost=578.00..6705.67 rows=8333 width=14) (actual time=11.984..53.566 rows=6667 loops=3)
+                                      Hash Cond: (o.id = oi.order_id)
+                                      ->  Parallel Seq Scan on "Order" o  (cost=0.00..5002.67 rows=166667 width=8) (actual time=0.007..13.491 rows=133333 loops=3)
+                                      ->  Hash  (cost=328.00..328.00 rows=20000 width=10) (actual time=9.920..9.921 rows=20000 loops=3)
+                                            Buckets: 32768  Batches: 1  Memory Usage: 1116kB
+                                            ->  Seq Scan on "OrderItem" oi  (cost=0.00..328.00 rows=20000 width=10) (actual time=0.025..5.843 rows=20000 loops=3)
+                                ->  Hash  (cost=1.06..1.06 rows=6 width=14) (actual time=0.029..0.029 rows=6 loops=3)
+                                      Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                      ->  Seq Scan on "PaymentMethod" pm  (cost=0.00..1.06 rows=6 width=14) (actual time=0.023..0.024 rows=6 loops=3)
+Planning Time: 8.353 ms
+Execution Time: 236.638 ms
+
+
+#########################################################
+### 12. Średnia ocena per producent
+#########################################################
+
+Sort  (cost=1367.54..1367.91 rows=150 width=57) (actual time=33.833..33.843 rows=150 loops=1)
+  Sort Key: (round(avg(r.rating), 2)) DESC NULLS LAST
+  Sort Method: quicksort  Memory: 32kB
+  ->  HashAggregate  (cost=1359.87..1362.12 rows=150 width=57) (actual time=33.704..33.766 rows=150 loops=1)
+        Group Key: m.name
+        Batches: 1  Memory Usage: 64kB
+        ->  Hash Join  (cost=693.38..1259.87 rows=20000 width=29) (actual time=5.971..27.124 rows=27388 loops=1)
+              Hash Cond: (p.manufacturer_id = m.id)
+              ->  Hash Right Join  (cost=688.00..1200.51 rows=20000 width=8) (actual time=5.263..21.080 rows=27388 loops=1)
+                    Hash Cond: (r.product_id = p.id)
+                    ->  Seq Scan on "Review" r  (cost=0.00..460.00 rows=20000 width=8) (actual time=0.009..4.918 rows=20000 loops=1)
+                    ->  Hash  (cost=438.00..438.00 rows=20000 width=8) (actual time=5.242..5.243 rows=20000 loops=1)
+                          Buckets: 32768  Batches: 1  Memory Usage: 1038kB
+                          ->  Seq Scan on "Product" p  (cost=0.00..438.00 rows=20000 width=8) (actual time=0.005..2.236 rows=20000 loops=1)
+              ->  Hash  (cost=3.50..3.50 rows=150 width=29) (actual time=0.058..0.059 rows=150 loops=1)
+                    Buckets: 1024  Batches: 1  Memory Usage: 18kB
+                    ->  Seq Scan on "Manufacturer" m  (cost=0.00..3.50 rows=150 width=29) (actual time=0.017..0.032 rows=150 loops=1)
+Planning Time: 10.772 ms
+Execution Time: 33.923 ms
+
+
+#########################################################
+### 13. Aktywne promocje i objęta nimi liczba wariantów
+#########################################################
+
+Sort  (cost=1058.71..1058.83 rows=48 width=14) (actual time=8.155..8.159 rows=47 loops=1)
+  Sort Key: (count(v.id)) DESC
+  Sort Method: quicksort  Memory: 26kB
+  ->  HashAggregate  (cost=1056.89..1057.37 rows=48 width=14) (actual time=8.133..8.141 rows=47 loops=1)
+        Group Key: pr.name
+        Batches: 1  Memory Usage: 24kB
+        ->  Hash Join  (cost=6.61..999.31 rows=11515 width=10) (actual time=0.076..7.813 rows=1368 loops=1)
+              Hash Cond: (v.promotion_id = pr.id)
+              ->  Seq Scan on "Variant" v  (cost=0.00..869.00 rows=47000 width=8) (actual time=0.011..3.244 rows=47000 loops=1)
+              ->  Hash  (cost=6.00..6.00 rows=49 width=10) (actual time=0.041..0.041 rows=48 loops=1)
+                    Buckets: 1024  Batches: 1  Memory Usage: 11kB
+                    ->  Seq Scan on "Promotion" pr  (cost=0.00..6.00 rows=49 width=10) (actual time=0.007..0.030 rows=48 loops=1)
+                          Filter: ((start_date <= now()) AND (end_date >= now()))
+                          Rows Removed by Filter: 152
+Planning Time: 10.096 ms
+Execution Time: 8.802 ms
+
+
+#########################################################
+### 14. Najczęściej wybierane warianty w koszykach
+#########################################################
+
+Limit  (cost=239024.65..239024.68 rows=10 width=44) (actual time=2286.985..2286.995 rows=10 loops=1)
+  ->  Sort  (cost=239024.65..242774.65 rows=1500000 width=44) (actual time=2286.972..2286.978 rows=10 loops=1)
+        Sort Key: (sum(ci.quantity)) DESC
+        Sort Method: top-N heapsort  Memory: 26kB
+        ->  HashAggregate  (cost=168172.69..206610.19 rows=1500000 width=44) (actual time=2267.221..2278.928 rows=47000 loops=1)
+              Group Key: v.sku, p.name
+              Planned Partitions: 32  Batches: 1  Memory Usage: 6161kB
+              ->  Hash Join  (cost=2144.50..33172.69 rows=1500000 width=40) (actual time=20.831..1488.025 rows=1500000 loops=1)
+                    Hash Cond: (v.product_id = p.id)
+                    ->  Hash Join  (cost=1456.50..28546.36 rows=1500000 width=31) (actual time=15.043..947.865 rows=1500000 loops=1)
+                          Hash Cond: (ci.variant_id = v.id)
+                          ->  Seq Scan on "CartItem" ci  (cost=0.00..23152.00 rows=1500000 width=8) (actual time=1.337..221.343 rows=1500000 loops=1)
+                          ->  Hash  (cost=869.00..869.00 rows=47000 width=31) (actual time=13.685..13.687 rows=47000 loops=1)
+                                Buckets: 65536  Batches: 1  Memory Usage: 3450kB
+                                ->  Seq Scan on "Variant" v  (cost=0.00..869.00 rows=47000 width=31) (actual time=0.008..5.469 rows=47000 loops=1)
+                    ->  Hash  (cost=438.00..438.00 rows=20000 width=17) (actual time=5.778..5.778 rows=20000 loops=1)
+                          Buckets: 32768  Batches: 1  Memory Usage: 1245kB
+                          ->  Seq Scan on "Product" p  (cost=0.00..438.00 rows=20000 width=17) (actual time=0.012..2.425 rows=20000 loops=1)
+Planning Time: 3.798 ms
+Execution Time: 2288.877 ms
+
+
+#########################################################
+### 15. Produkty z Największą Różnicą Między Ceną Podstawową a Ceną Wariantu
+#########################################################
+
+Limit  (cost=2813.55..2813.58 rows=10 width=80) (actual time=43.823..43.827 rows=10 loops=1)
+  ->  Sort  (cost=2813.55..2931.05 rows=47000 width=80) (actual time=43.821..43.824 rows=10 loops=1)
+        Sort Key: v.price_modifier DESC
+        Sort Method: top-N heapsort  Memory: 27kB
+        ->  Hash Join  (cost=688.00..1797.90 rows=47000 width=80) (actual time=6.397..31.841 rows=47000 loops=1)
+              Hash Cond: (v.product_id = p.id)
+              ->  Seq Scan on "Variant" v  (cost=0.00..869.00 rows=47000 width=33) (actual time=0.010..3.363 rows=47000 loops=1)
+              ->  Hash  (cost=438.00..438.00 rows=20000 width=23) (actual time=6.370..6.371 rows=20000 loops=1)
+                    Buckets: 32768  Batches: 1  Memory Usage: 1381kB
+                    ->  Seq Scan on "Product" p  (cost=0.00..438.00 rows=20000 width=23) (actual time=0.006..2.713 rows=20000 loops=1)
+Planning Time: 2.725 ms
+Execution Time: 43.866 ms
+
+
+#########################################################
+### 16. Konwersja zamówień wg statusu
+#########################################################
+
+Sort  (cost=7957.56..7962.66 rows=2040 width=48) (actual time=227.574..327.450 rows=7 loops=1)
+  Sort Key: (count(o.id)) DESC
+  Sort Method: quicksort  Memory: 25kB
+  ->  WindowAgg  (cost=7824.99..7845.41 rows=2040 width=48) (actual time=227.560..327.441 rows=7 loops=1)
+        ->  Finalize HashAggregate  (cost=7779.11..7799.51 rows=2040 width=16) (actual time=226.434..326.325 rows=7 loops=1)
+              Group Key: s.name
+              Batches: 1  Memory Usage: 121kB
+              ->  Gather  (cost=7330.31..7758.71 rows=4080 width=16) (actual time=216.752..325.184 rows=21 loops=1)
+                    Workers Planned: 2
+                    Workers Launched: 2
+                    ->  Partial HashAggregate  (cost=6330.31..6350.71 rows=2040 width=16) (actual time=86.887..86.905 rows=7 loops=3)
+                          Group Key: s.name
+                          Batches: 1  Memory Usage: 121kB
+                          Worker 0:  Batches: 1  Memory Usage: 121kB
+                          Worker 1:  Batches: 1  Memory Usage: 121kB
+                          ->  Hash Join  (cost=55.90..5496.98 rows=166667 width=12) (actual time=0.433..49.460 rows=133333 loops=3)
+                                Hash Cond: (o.status_id = s.id)
+                                ->  Parallel Seq Scan on "Order" o  (cost=0.00..5002.67 rows=166667 width=8) (actual time=0.009..11.829 rows=133333 loops=3)
+                                ->  Hash  (cost=30.40..30.40 rows=2040 width=12) (actual time=0.031..0.032 rows=7 loops=3)
+                                      Buckets: 2048  Batches: 1  Memory Usage: 17kB
+                                      ->  Seq Scan on "Status" s  (cost=0.00..30.40 rows=2040 width=12) (actual time=0.026..0.027 rows=7 loops=3)
+Planning Time: 5.667 ms
+Execution Time: 334.386 ms
+
+
+#########################################################
+### 17. Top klienci wg wydatków
+#########################################################
+
+Limit  (cost=15399.41..15399.44 rows=10 width=50) (actual time=3808.630..3815.103 rows=10 loops=1)
+  ->  Sort  (cost=15399.41..15449.41 rows=20000 width=50) (actual time=3808.629..3815.100 rows=10 loops=1)
+        Sort Key: (sum(oi.unit_price)) DESC
+        Sort Method: top-N heapsort  Memory: 26kB
+        ->  Finalize HashAggregate  (cost=14717.22..14967.22 rows=20000 width=50) (actual time=3792.022..3807.255 rows=19296 loops=1)
+              Group Key: u.id
+              Batches: 5  Memory Usage: 8241kB  Disk Usage: 216kB
+              ->  Gather  (cost=12821.46..14592.22 rows=16666 width=50) (actual time=3276.760..3461.262 rows=19431 loops=1)
+                    Workers Planned: 2
+                    Workers Launched: 2
+                    ->  Partial HashAggregate  (cost=11821.46..11925.62 rows=8333 width=50) (actual time=3211.581..3327.473 rows=6477 loops=3)
+                          Group Key: u.id
+                          Batches: 1  Memory Usage: 3217kB
+                          Worker 0:  Batches: 1  Memory Usage: 2961kB
+                          Worker 1:  Batches: 1  Memory Usage: 2961kB
+                          ->  Nested Loop  (cost=578.42..11779.80 rows=8333 width=24) (actual time=7.600..3128.106 rows=6667 loops=3)
+                                ->  Hash Join  (cost=578.00..6705.67 rows=8333 width=10) (actual time=6.958..129.406 rows=6667 loops=3)
+                                      Hash Cond: (o.id = oi.order_id)
+                                      ->  Parallel Seq Scan on "Order" o  (cost=0.00..5002.67 rows=166667 width=8) (actual time=0.008..43.460 rows=133333 loops=3)
+                                      ->  Hash  (cost=328.00..328.00 rows=20000 width=10) (actual time=6.620..7.464 rows=20000 loops=3)
+                                            Buckets: 32768  Batches: 1  Memory Usage: 1116kB
+                                            ->  Seq Scan on "OrderItem" oi  (cost=0.00..328.00 rows=20000 width=10) (actual time=0.028..2.495 rows=20000 loops=3)
+                                ->  Index Scan using "User_pkey" on "User" u  (cost=0.42..0.61 rows=1 width=18) (actual time=0.440..0.440 rows=1 loops=20000)
+                                      Index Cond: (id = o.user_id)
+Planning Time: 9.063 ms
+Execution Time: 3830.114 ms
+
+
+#########################################################
+### 18. Produkty z wariantami objętymi promocją, z końcową ceną
+#########################################################
+
+Sort  (cost=2667.03..2695.82 rows=11515 width=132) (actual time=88.676..88.860 rows=1368 loops=1)
+  Sort Key: (round(((p.price + v.price_modifier) * ('1'::numeric - pr.discount_percentage)), 2))
+  Sort Method: quicksort  Memory: 148kB
+  ->  Hash Join  (cost=694.61..1890.27 rows=11515 width=132) (actual time=37.217..82.130 rows=1368 loops=1)
+        Hash Cond: (v.product_id = p.id)
+        ->  Hash Join  (cost=6.61..999.31 rows=11515 width=39) (actual time=1.716..45.071 rows=1368 loops=1)
+              Hash Cond: (v.promotion_id = pr.id)
+              ->  Seq Scan on "Variant" v  (cost=0.00..869.00 rows=47000 width=37) (actual time=0.965..24.586 rows=47000 loops=1)
+              ->  Hash  (cost=6.00..6.00 rows=49 width=10) (actual time=0.057..0.057 rows=48 loops=1)
+                    Buckets: 1024  Batches: 1  Memory Usage: 11kB
+                    ->  Seq Scan on "Promotion" pr  (cost=0.00..6.00 rows=49 width=10) (actual time=0.021..0.044 rows=48 loops=1)
+                          Filter: ((start_date <= now()) AND (end_date >= now()))
+                          Rows Removed by Filter: 152
+        ->  Hash  (cost=438.00..438.00 rows=20000 width=23) (actual time=35.481..35.482 rows=20000 loops=1)
+              Buckets: 32768  Batches: 1  Memory Usage: 1381kB
+              ->  Seq Scan on "Product" p  (cost=0.00..438.00 rows=20000 width=23) (actual time=0.011..29.583 rows=20000 loops=1)
+Planning Time: 41.003 ms
+Execution Time: 102.660 ms
+
+
+#########################################################
+### 19. Użytkownicy, Którzy Dodali Produkt do Koszyka, Ale Nie Złożyli Zamówienia (Potencjał Odbudowy Koszyka)
+#########################################################
+
+Hash Join  (cost=45873.97..103632.31 rows=1070130 width=55) (actual time=3637.456..6095.483 rows=1005006 loops=1)
+  Hash Cond: (v.product_id = p.id)
+  ->  Hash Join  (cost=45185.97..100134.62 rows=1070130 width=46) (actual time=3625.343..5540.016 rows=1005006 loops=1)
+        Hash Cond: (ci.variant_id = v.id)
+        ->  Hash Join  (cost=43729.47..95868.77 rows=1070130 width=46) (actual time=3608.039..4765.463 rows=1005006 loops=1)
+              Hash Cond: (ci.cart_id = c.id)
+              ->  Seq Scan on "CartItem" ci  (cost=0.00..23152.00 rows=1500000 width=8) (actual time=5.894..303.926 rows=1500000 loops=1)
+              ->  Hash  (cost=41450.81..41450.81 rows=107013 width=46) (actual time=3591.169..3600.723 rows=100414 loops=1)
+                    Buckets: 131072  Batches: 2  Memory Usage: 4929kB
+                    ->  Gather  (cost=25017.67..41450.81 rows=107013 width=46) (actual time=3131.533..3262.684 rows=100414 loops=1)
+                          Workers Planned: 2
+                          Workers Launched: 2
+                          ->  Parallel Hash Right Anti Join  (cost=24017.67..29749.51 rows=44589 width=46) (actual time=2657.923..2671.860 rows=33471 loops=3)
+                                Hash Cond: (o.user_id = u.id)
+                                ->  Parallel Seq Scan on "Order" o  (cost=0.00..5002.67 rows=166667 width=4) (actual time=1.536..226.407 rows=133333 loops=3)
+                                ->  Parallel Hash  (cost=23236.42..23236.42 rows=62500 width=50) (actual time=2114.817..2115.651 rows=50000 loops=3)
+                                      Buckets: 262144  Batches: 1  Memory Usage: 14720kB
+                                      ->  Hash Join  (cost=4079.00..23236.42 rows=62500 width=50) (actual time=257.552..1847.150 rows=50000 loops=3)
+                                            Hash Cond: (u.id = c.user_id)
+                                            ->  Parallel Seq Scan on "User" u  (cost=0.00..18063.67 rows=416667 width=46) (actual time=10.806..1124.324 rows=333333 loops=3)
+                                            ->  Hash  (cost=2204.00..2204.00 rows=150000 width=8) (actual time=236.610..237.052 rows=150000 loops=3)
+                                                  Buckets: 262144  Batches: 1  Memory Usage: 7908kB
+                                                  ->  Seq Scan on "Cart" c  (cost=0.00..2204.00 rows=150000 width=8) (actual time=14.258..143.199 rows=150000 loops=3)
+        ->  Hash  (cost=869.00..869.00 rows=47000 width=8) (actual time=14.938..15.487 rows=47000 loops=1)
+              Buckets: 65536  Batches: 1  Memory Usage: 2348kB
+              ->  Seq Scan on "Variant" v  (cost=0.00..869.00 rows=47000 width=8) (actual time=0.013..5.620 rows=47000 loops=1)
+  ->  Hash  (cost=438.00..438.00 rows=20000 width=17) (actual time=8.806..8.807 rows=20000 loops=1)
+        Buckets: 32768  Batches: 1  Memory Usage: 1245kB
+        ->  Seq Scan on "Product" p  (cost=0.00..438.00 rows=20000 width=17) (actual time=3.117..5.470 rows=20000 loops=1)
+Planning Time: 132.174 ms
+Execution Time: 6168.405 ms
+
+
+#########################################################
+### 20. Wyszukiwanie produktów po nazwie lub opisie (parametryzowane)
+#########################################################
+
+Seq Scan on "Product"  (cost=0.00..538.00 rows=4 width=60) (actual time=0.707..97.840 rows=1 loops=1)
+  Filter: (((name)::text ~~* '%Cut Often%'::text) OR (description ~~* '%Maintain institution name dark want consumer.%'::text))
+  Rows Removed by Filter: 19999
+Planning Time: 76.986 ms
+Execution Time: 99.470 ms
+
+
+#########################################################
+### 21. Użytkownicy, Którzy Zapisali Konkretny Produkt jako Ulubiony (np. Product ID=350259)
+#########################################################
+
+Gather  (cost=1000.42..7485.31 rows=30 width=56) (actual time=111.560..621.415 rows=26 loops=1)
+  Workers Planned: 2
+  Workers Launched: 2
+  ->  Nested Loop  (cost=0.42..6482.31 rows=12 width=56) (actual time=94.462..429.286 rows=9 loops=3)
+        ->  Parallel Seq Scan on "FavoriteProduct" fp  (cost=0.00..6381.00 rows=12 width=4) (actual time=93.582..423.738 rows=9 loops=3)
+              Filter: (product_id = 35)
+              Rows Removed by Filter: 199991
+        ->  Index Scan using "User_pkey" on "User" u  (cost=0.42..8.44 rows=1 width=60) (actual time=0.584..0.584 rows=1 loops=26)
+              Index Cond: (id = fp.user_id)
+Planning Time: 26.445 ms
+Execution Time: 622.770 ms
+
+
+#########################################################
+### 22. Znajdź Magazyny, Które Posiadają Zapasy Konkretnego Wariantu (np. SKU='VR-000000-a637d44b7afd')
+#########################################################
+
+Finalize GroupAggregate  (cost=5485.22..5485.69 rows=2 width=25) (actual time=76.869..132.998 rows=0 loops=1)
+  Group Key: w.name
+  Filter: (count(si.id) > 0)
+  ->  Gather Merge  (cost=5485.22..5485.61 rows=3 width=25) (actual time=76.868..132.996 rows=0 loops=1)
+        Workers Planned: 1
+        Workers Launched: 1
+        ->  Partial GroupAggregate  (cost=4485.21..4485.26 rows=3 width=25) (actual time=5.171..5.174 rows=0 loops=2)
+              Group Key: w.name
+              ->  Sort  (cost=4485.21..4485.22 rows=3 width=21) (actual time=5.169..5.172 rows=0 loops=2)
+                    Sort Key: w.name
+                    Sort Method: quicksort  Memory: 25kB
+                    Worker 0:  Sort Method: quicksort  Memory: 25kB
+                    ->  Nested Loop  (cost=8.60..4485.19 rows=3 width=21) (actual time=3.767..3.769 rows=0 loops=2)
+                          ->  Hash Join  (cost=8.44..4484.67 rows=3 width=8) (actual time=3.766..3.768 rows=0 loops=2)
+                                Hash Cond: (si.variant_id = v.id)
+                                ->  Parallel Seq Scan on "StockItem" si  (cost=0.00..4131.35 rows=131369 width=12) (actual time=0.021..0.021 rows=1 loops=2)
+                                      Filter: (shipment_id IS NULL)
+                                ->  Hash  (cost=8.43..8.43 rows=1 width=4) (actual time=3.003..3.004 rows=0 loops=2)
+                                      Buckets: 1024  Batches: 1  Memory Usage: 8kB
+                                      ->  Index Scan using "Variant_sku_key" on "Variant" v  (cost=0.41..8.43 rows=1 width=4) (actual time=3.003..3.003 rows=0 loops=2)
+                                            Index Cond: ((sku)::text = 'VR-000001-2704de10f283'::text)
+                          ->  Index Scan using "Warehouse_pkey" on "Warehouse" w  (cost=0.15..0.17 rows=1 width=21) (never executed)
+                                Index Cond: (id = si.warehouse_id)
+Planning Time: 19.969 ms
+Execution Time: 137.626 ms
+
+
+#########################################################
+### 23. Warianty, Które Wymagają Uzyskania Konkretnej Opcji (np. 'Kolor'='Czerwony')
+#########################################################
+
+Nested Loop  (cost=1027.27..4262.08 rows=1 width=36) (actual time=64.565..124.975 rows=0 loops=1)
+  ->  Nested Loop  (cost=1026.98..4261.75 rows=1 width=27) (actual time=64.564..124.974 rows=0 loops=1)
+        ->  Gather  (cost=1026.69..4261.43 rows=1 width=4) (actual time=64.564..124.973 rows=0 loops=1)
+              Workers Planned: 1
+              Workers Launched: 1
+              ->  Hash Join  (cost=26.69..3261.33 rows=1 width=4) (actual time=2.340..2.342 rows=0 loops=2)
+                    Hash Cond: (opt.attribute_id = a.id)
+                    ->  Hash Join  (cost=18.51..3252.77 rows=147 width=8) (never executed)
+                          Hash Cond: (vo.option_id = opt.id)
+                          ->  Parallel Seq Scan on "VariantOption" vo  (cost=0.00..2846.59 rows=147059 width=8) (never executed)
+                          ->  Hash  (cost=18.50..18.50 rows=1 width=8) (never executed)
+                                ->  Seq Scan on "Option" opt  (cost=0.00..18.50 rows=1 width=8) (never executed)
+                                      Filter: ((value)::text = 'do'::text)
+                    ->  Hash  (cost=8.17..8.17 rows=1 width=4) (actual time=2.300..2.301 rows=0 loops=2)
+                          Buckets: 1024  Batches: 1  Memory Usage: 8kB
+                          ->  Index Scan using "Attribute_name_key" on "Attribute" a  (cost=0.15..8.17 rows=1 width=4) (actual time=2.300..2.300 rows=0 loops=2)
+                                Index Cond: ((name)::text = 'Attr_49_Century'::text)
+        ->  Index Scan using "Variant_pkey" on "Variant" v  (cost=0.29..0.32 rows=1 width=31) (never executed)
+              Index Cond: (id = vo.variant_id)
+  ->  Index Scan using "Product_pkey" on "Product" p  (cost=0.29..0.33 rows=1 width=17) (never executed)
+        Index Cond: (id = v.product_id)
+Planning Time: 45.969 ms
+Execution Time: 129.896 ms
+
+
+#########################################################
+### 24. Znajdź Zamówienia Użytkownika (np. email='debbie.lane.16786.50af0753@example.com') o Statusie 'Paid'
+#########################################################
+
+Nested Loop  (cost=1008.61..6448.92 rows=1 width=20) (actual time=52.017..110.089 rows=0 loops=1)
+  ->  Gather  (cost=1008.46..6448.72 rows=1 width=16) (actual time=52.017..110.087 rows=0 loops=1)
+        Workers Planned: 2
+        Workers Launched: 2
+        ->  Hash Join  (cost=8.46..5448.62 rows=1 width=16) (actual time=2.639..2.641 rows=0 loops=3)
+              Hash Cond: (o.user_id = u.id)
+              ->  Parallel Seq Scan on "Order" o  (cost=0.00..5002.67 rows=166667 width=20) (actual time=0.140..0.140 rows=1 loops=3)
+              ->  Hash  (cost=8.44..8.44 rows=1 width=4) (actual time=2.191..2.192 rows=0 loops=3)
+                    Buckets: 1024  Batches: 1  Memory Usage: 8kB
+                    ->  Index Scan using "User_email_key" on "User" u  (cost=0.42..8.44 rows=1 width=4) (actual time=2.191..2.191 rows=0 loops=3)
+                          Index Cond: ((email)::text = 'debbie.lane.16786.50af0753@example.com'::text)
+  ->  Index Scan using "Status_pkey" on "Status" s  (cost=0.15..0.17 rows=1 width=12) (never executed)
+        Index Cond: (id = o.status_id)
+        Filter: ((name)::text = 'Paid'::text)
+Planning Time: 17.853 ms
+Execution Time: 114.979 ms
+
+
+#########################################################
+### 25. Wszystkie Warianty i Ich Ceny dla Konkretnego Produktu (np. ID=350259)
+#########################################################
+
+Nested Loop Left Join  (cost=1.14..1020.80 rows=16 width=87) (actual time=15.964..146.984 rows=18 loops=1)
+  ->  Nested Loop Left Join  (cost=0.98..1017.27 rows=16 width=45) (actual time=14.998..145.968 rows=18 loops=1)
+        ->  Nested Loop Left Join  (cost=0.71..1012.59 rows=16 width=39) (actual time=13.706..142.748 rows=18 loops=1)
+              ->  Nested Loop  (cost=0.29..994.84 rows=3 width=39) (actual time=13.084..139.392 rows=4 loops=1)
+                    ->  Index Scan using "Product_pkey" on "Product" p  (cost=0.29..8.30 rows=1 width=10) (actual time=0.011..0.015 rows=1 loops=1)
+                          Index Cond: (id = 35)
+                    ->  Seq Scan on "Variant" v  (cost=0.00..986.50 rows=3 width=37) (actual time=13.069..139.369 rows=4 loops=1)
+                          Filter: (product_id = 35)
+                          Rows Removed by Filter: 46996
+              ->  Index Only Scan using uq_varopt_variant_option on "VariantOption" vo  (cost=0.42..5.86 rows=6 width=8) (actual time=0.832..0.834 rows=4 loops=4)
+                    Index Cond: (variant_id = v.id)
+                    Heap Fetches: 0
+        ->  Index Scan using "Option_pkey" on "Option" opt  (cost=0.28..0.29 rows=1 width=14) (actual time=0.178..0.178 rows=1 loops=18)
+              Index Cond: (id = vo.option_id)
+  ->  Index Scan using "Attribute_pkey" on "Attribute" a  (cost=0.15..0.22 rows=1 width=18) (actual time=0.002..0.002 rows=1 loops=18)
+        Index Cond: (id = opt.attribute_id)
+Planning Time: 9.672 ms
+Execution Time: 147.792 ms
+
+
+#########################################################
+### 26. Lista Wszystkich Dziecięcych Kategorii (Podkategorii) dla Konkretnej Kategorii Nadrzędnej (np. ID=5)
+#########################################################
+
+Seq Scan on "Category"  (cost=0.00..3.88 rows=3 width=12) (actual time=0.016..0.602 rows=3 loops=1)
+  Filter: (parent_id = 5)
+  Rows Removed by Filter: 147
+Planning Time: 1.397 ms
+Execution Time: 0.620 ms
+
+
+#########################################################
+### 27. Porównanie Średniej Oceny dla Promowanych i Niepromowanych Produktów
+#########################################################
+
+GroupAggregate  (cost=19733179.28..19733331.78 rows=200 width=64) (actual time=95.195..95.927 rows=2 loops=1)
+  Group Key: sub.promotion_status
+  ->  Sort  (cost=19733179.28..19733229.28 rows=20000 width=64) (actual time=92.900..93.574 rows=12612 loops=1)
+        Sort Key: sub.promotion_status
+        Sort Method: quicksort  Memory: 863kB
+        ->  Subquery Scan on sub  (cost=1300.51..19731750.51 rows=20000 width=64) (actual time=75.818..83.841 rows=12612 loops=1)
+              ->  HashAggregate  (cost=1300.51..19731550.51 rows=20000 width=68) (actual time=75.817..82.643 rows=12612 loops=1)
+                    Group Key: p.id
+                    Batches: 1  Memory Usage: 2577kB
+                    ->  Hash Join  (cost=688.00..1200.51 rows=20000 width=8) (actual time=7.880..60.559 rows=20000 loops=1)
+                          Hash Cond: (r.product_id = p.id)
+                          ->  Seq Scan on "Review" r  (cost=0.00..460.00 rows=20000 width=8) (actual time=1.419..46.183 rows=20000 loops=1)
+                          ->  Hash  (cost=438.00..438.00 rows=20000 width=4) (actual time=6.434..6.434 rows=20000 loops=1)
+                                Buckets: 32768  Batches: 1  Memory Usage: 960kB
+                                ->  Seq Scan on "Product" p  (cost=0.00..438.00 rows=20000 width=4) (actual time=0.009..2.138 rows=20000 loops=1)
+                    SubPlan 2
+                      ->  Seq Scan on "Variant" v2  (cost=0.00..869.00 rows=5739 width=4) (actual time=0.015..4.183 rows=5684 loops=1)
+                            Filter: (promotion_id IS NOT NULL)
+                            Rows Removed by Filter: 41316
+Planning Time: 1.229 ms
+Execution Time: 99.653 ms
+
+
+#########################################################
+### 28. Top 5 Miast Generujących Największy Przychód (Wg. Adresu Wysyłki)
+#########################################################
+
+Limit  (cost=15315.16..15315.17 rows=5 width=45) (actual time=4524.968..4709.923 rows=5 loops=1)
+  ->  Sort  (cost=15315.16..15365.16 rows=20000 width=45) (actual time=4524.957..4709.908 rows=5 loops=1)
+        Sort Key: (sum(oi.unit_price)) DESC
+        Sort Method: top-N heapsort  Memory: 25kB
+        ->  Finalize HashAggregate  (cost=14732.97..14982.97 rows=20000 width=45) (actual time=4502.590..4692.560 rows=12950 loops=1)
+              Group Key: a.city
+              Batches: 1  Memory Usage: 5905kB
+              ->  Gather  (cost=12837.21..14607.97 rows=16666 width=45) (actual time=4198.081..4476.489 rows=16126 loops=1)
+                    Workers Planned: 2
+                    Workers Launched: 2
+                    ->  Partial HashAggregate  (cost=11837.21..11941.37 rows=8333 width=45) (actual time=4137.423..4158.847 rows=5375 loops=3)
+                          Group Key: a.city
+                          Batches: 1  Memory Usage: 2449kB
+                          Worker 0:  Batches: 1  Memory Usage: 2449kB
+                          Worker 1:  Batches: 1  Memory Usage: 2449kB
+                          ->  Nested Loop  (cost=578.43..11795.55 rows=8333 width=19) (actual time=43.227..4063.632 rows=6667 loops=3)
+                                ->  Hash Join  (cost=578.00..6705.67 rows=8333 width=10) (actual time=36.234..193.979 rows=6667 loops=3)
+                                      Hash Cond: (o.id = oi.order_id)
+                                      ->  Parallel Seq Scan on "Order" o  (cost=0.00..5002.67 rows=166667 width=8) (actual time=0.008..61.153 rows=133333 loops=3)
+                                      ->  Hash  (cost=328.00..328.00 rows=20000 width=10) (actual time=35.976..38.954 rows=20000 loops=3)
+                                            Buckets: 32768  Batches: 1  Memory Usage: 1116kB
+                                            ->  Seq Scan on "OrderItem" oi  (cost=0.00..328.00 rows=20000 width=10) (actual time=0.451..31.674 rows=20000 loops=3)
+                                ->  Index Scan using "Address_pkey" on "Address" a  (cost=0.43..0.61 rows=1 width=17) (actual time=0.573..0.573 rows=1 loops=20000)
+                                      Index Cond: (id = o.shipping_address_id)
+Planning Time: 19.750 ms
+Execution Time: 4727.653 ms
+
+
+#########################################################
+### 29. Porównanie Wolumenu Sprzedaży Produktów Promowanych vs. Niepromowanych (w Ostatnich 30 Dniach)
+#########################################################
+
+Finalize GroupAggregate  (cost=8783.64..8839.93 rows=200 width=40) (actual time=732.105..930.438 rows=2 loops=1)
+  Group Key: (CASE WHEN (v.promotion_id IS NOT NULL) THEN 'Promowany'::text ELSE 'Niepromowany'::text END)
+  ->  Gather Merge  (cost=8783.64..8835.93 rows=400 width=40) (actual time=730.896..930.411 rows=6 loops=1)
+        Workers Planned: 2
+        Workers Launched: 2
+        ->  Partial GroupAggregate  (cost=7783.62..7789.74 rows=200 width=40) (actual time=626.929..626.968 rows=2 loops=3)
+              Group Key: (CASE WHEN (v.promotion_id IS NOT NULL) THEN 'Promowany'::text ELSE 'Niepromowany'::text END)
+              ->  Sort  (cost=7783.62..7784.99 rows=549 width=32) (actual time=623.241..623.281 rows=448 loops=3)
+                    Sort Key: (CASE WHEN (v.promotion_id IS NOT NULL) THEN 'Promowany'::text ELSE 'Niepromowany'::text END)
+                    Sort Method: quicksort  Memory: 25kB
+                    Worker 0:  Sort Method: quicksort  Memory: 25kB
+                    Worker 1:  Sort Method: quicksort  Memory: 25kB
+                    ->  Nested Loop  (cost=578.71..7758.64 rows=549 width=32) (actual time=11.436..592.010 rows=448 loops=3)
+                          ->  Nested Loop  (cost=578.42..7586.18 rows=549 width=4) (actual time=10.207..551.193 rows=448 loops=3)
+                                ->  Hash Join  (cost=578.00..6904.76 rows=549 width=4) (actual time=7.778..65.235 rows=448 loops=3)
+                                      Hash Cond: (o.id = oi.order_id)
+                                      ->  Parallel Seq Scan on "Order" o  (cost=0.00..6252.67 rows=10977 width=4) (actual time=0.029..54.530 rows=8890 loops=3)
+                                            Filter: (order_date >= (now() - '30 days'::interval))
+                                            Rows Removed by Filter: 124443
+                                      ->  Hash  (cost=328.00..328.00 rows=20000 width=8) (actual time=7.178..7.181 rows=20000 loops=3)
+                                            Buckets: 32768  Batches: 1  Memory Usage: 1038kB
+                                            ->  Seq Scan on "OrderItem" oi  (cost=0.00..328.00 rows=20000 width=8) (actual time=0.038..2.641 rows=20000 loops=3)
+                                ->  Index Scan using "StockItem_pkey" on "StockItem" si  (cost=0.42..1.24 rows=1 width=8) (actual time=1.082..1.082 rows=1 loops=1345)
+                                      Index Cond: (id = oi.stock_item_id)
+                          ->  Index Scan using "Variant_pkey" on "Variant" v  (cost=0.29..0.31 rows=1 width=8) (actual time=0.089..0.089 rows=1 loops=1345)
+                                Index Cond: (id = si.variant_id)
+Planning Time: 29.270 ms
+Execution Time: 937.234 ms
+
+
+#########################################################
+### 30. Wskaźnik Lojalności (Repeat Purchase Rate) Użytkowników z Podziałem na Miasto Adresu Rozliczeniowego
+#########################################################
+
+Sort  (cost=87236.11..87311.52 rows=30162 width=61) (actual time=6056.279..6074.854 rows=66456 loops=1)
+  Sort Key: (round((((count(*) FILTER (WHERE (u.orders_count > 1)))::numeric * 100.0) / (NULLIF(count(*), 0))::numeric), 2)) DESC
+  Sort Method: external merge  Disk: 3192kB
+  ->  Finalize HashAggregate  (cost=84237.94..84991.99 rows=30162 width=61) (actual time=5936.235..5998.104 rows=66456 loops=1)
+        Group Key: a.city
+        Batches: 5  Memory Usage: 8241kB  Disk Usage: 720kB
+        ->  Gather  (cost=77451.49..83785.51 rows=60324 width=29) (actual time=5550.907..5706.708 rows=122237 loops=1)
+              Workers Planned: 2
+              Workers Launched: 2
+              ->  Partial HashAggregate  (cost=76451.49..76753.11 rows=30162 width=29) (actual time=4756.620..4771.924 rows=40746 loops=3)
+                    Group Key: a.city
+                    Batches: 1  Memory Usage: 5137kB
+                    Worker 0:  Batches: 1  Memory Usage: 5137kB
+                    Worker 1:  Batches: 1  Memory Usage: 5137kB
+                    ->  Parallel Hash Join  (cost=53902.27..74784.82 rows=166667 width=21) (actual time=1537.365..4319.882 rows=133333 loops=3)
+                          Hash Cond: (a.id = o.billing_address_id)
+                          ->  Parallel Seq Scan on "Address" a  (cost=0.00..18306.26 rows=501826 width=17) (actual time=4.548..1747.538 rows=400000 loops=3)
+                          ->  Parallel Hash  (cost=51818.93..51818.93 rows=166667 width=12) (actual time=1526.910..1528.150 rows=133333 loops=3)
+                                Buckets: 524288  Batches: 1  Memory Usage: 22912kB
+                                ->  Hash Join  (cost=43674.75..51818.93 rows=166667 width=12) (actual time=1010.201..1280.656 rows=133333 loops=3)
+                                      Hash Cond: (o.user_id = u.user_id)
+                                      ->  Parallel Seq Scan on "Order" o  (cost=0.00..5002.67 rows=166667 width=8) (actual time=0.975..41.028 rows=133333 loops=3)
+                                      ->  Hash  (cost=38692.54..38692.54 rows=286577 width=12) (actual time=887.118..888.353 rows=329619 loops=3)
+                                            Buckets: 262144  Batches: 4  Memory Usage: 5596kB
+                                            ->  Subquery Scan on u  (cost=29836.00..38692.54 rows=286577 width=12) (actual time=416.428..744.634 rows=329619 loops=3)
+                                                  ->  HashAggregate  (cost=29836.00..35826.77 rows=286577 width=12) (actual time=416.131..708.064 rows=329619 loops=3)
+                                                        Group Key: "Order".user_id
+                                                        Planned Partitions: 4  Batches: 5  Memory Usage: 8241kB  Disk Usage: 7672kB
+                                                        Worker 0:  Batches: 5  Memory Usage: 8241kB  Disk Usage: 7672kB
+                                                        Worker 1:  Batches: 5  Memory Usage: 8241kB  Disk Usage: 7672kB
+                                                        ->  Seq Scan on "Order"  (cost=0.00..7336.00 rows=400000 width=4) (actual time=10.315..93.951 rows=400000 loops=3)
+Planning Time: 2.881 ms
+Execution Time: 6149.073 ms
