@@ -12,13 +12,14 @@ def log(text):
     with open(LOG_FILE, "a", encoding="utf-8") as f:
         f.write(text + "\n")
 
+#UZUPELNIC HOST, PASSWORD
 
 def run_explain_queries():
     conn = psycopg2.connect(
-        host="projectdatabase.cjy06esawu7e.eu-west-3.rds.amazonaws.com",
+        host="",
         database="postgres",
         user="postgres",
-        password="ciyoJLyVTY1dyCTGkAws"
+        password=""
     )
     cur = conn.cursor()
 
