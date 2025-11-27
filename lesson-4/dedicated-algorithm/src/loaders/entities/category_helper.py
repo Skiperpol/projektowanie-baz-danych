@@ -72,39 +72,32 @@ class CategoryHelper:
         self.loader.category_depth[category_id] = depth
         return depth
 
-def build_category_shared_attributes(self, attribute_ids: List[int]):
-    """Build shared attributes for each category based on hierarchy."""
-    if self.loader.category_shared_attributes or not attribute_ids:
-        return
-    if not self.loader.category_parent:
-        self.ensure_category_metadata()
+    def build_category_shared_attributes(self, attribute_ids: List[int]):
+        """Build shared attributes for each category based on hierarchy."""
+        if self.loader.category_shared_attributes or not attribute_ids:
+            return
+        if not self.loader.category_parent:
+            self.ensure_category_metadata()
 
-    for category_id in self.loader.category_order_cache:
-        parent_id = self.loader.category_parent.get(category_id)
-        parent_shared_list = self._get_parent_attributes(parent_id)
-        parent_attrs = set(parent_shared_list)
-        extra_attribute_count = self._compute_extra_attribute_count(parent_id)
-        extra_attrs = self._pick_extra_attributes(attribute_ids, parent_attrs, extra_attribute_count)
+        for category_id in self.loader.category_order_cache:
+            parent_id = self.loader.category_parent.get(category_id)
+            parent_shared_list = self._get_parent_attributes(parent_id)
+            parent_attrs = set(parent_shared_list)
+            extra_attribute_count = self._compute_extra_attribute_count(parent_id)
+            extra_attrs = self._pick_extra_attributes(attribute_ids, parent_attrs, extra_attribute_count)
 
-        combined = list(dict.fromkeys([*parent_shared_list, *extra_attrs]))
-        if not combined and attribute_ids:
-            combined = [random.choice(attribute_ids)]
+            combined = list(dict.fromkeys(parent_shared_list + extra_attrs))
+            if not combined and attribute_ids:
+                combined = [random.choice(attribute_ids)]
 
-        self.loader.category_shared_attributes[category_id] = combined
+            self.loader.category_shared_attributes[category_id] = combined
 
     def get_optional_attrs_for_category(self, category_id: int, attribute_ids: List[int]) -> List[int]:
         """Get optional attributes pool for a category."""
         if category_id not in self.loader.category_optional_pool:
-            shared = set(self.loader.category_shared_attributes.get(category_id, []))
-            pool_candidates = [aid for aid in attribute_ids if aid not in shared]
-            if len(pool_candidates) < self.optional_pool_size:
-                pool_candidates = attribute_ids[:]
-            if self.optional_pool_size == 0 or not pool_candidates:
-                pool = []
-            else:
-                unique_candidates = list(dict.fromkeys(pool_candidates))
-                sample_size = min(self.optional_pool_size, len(unique_candidates))
-                pool = random.sample(unique_candidates, sample_size)
+            candidates = self._filter_shared_attributes(category_id, attribute_ids)
+            candidates = self._ensure_min_candidates(candidates, attribute_ids)
+            pool = self._pick_optional_attributes(candidates)
             self.loader.category_optional_pool[category_id] = pool
         return self.loader.category_optional_pool[category_id]
 
@@ -112,12 +105,10 @@ def build_category_shared_attributes(self, attribute_ids: List[int]):
         """Calculate the number of optional attributes based on shared count."""
         if shared_count == 0:
             return 0
-        lower = max(self.common_attribute_ratio - self.common_attribute_variation, 0.01)
-        upper = min(self.common_attribute_ratio + self.common_attribute_variation, 0.99)
-        if lower > upper:
-            lower, upper = upper, lower
-        ratio = random.uniform(lower, upper)
-        ratio = max(min(ratio, 0.95), 0.05)
+        ratio = random.uniform(
+            max(self.common_attribute_ratio - self.common_attribute_variation, 0.05),
+            min(self.common_attribute_ratio + self.common_attribute_variation, 0.95)
+        )
         optional = round(shared_count * (1 - ratio) / ratio)
         return max(optional, 0)
 
@@ -151,6 +142,25 @@ def build_category_shared_attributes(self, attribute_ids: List[int]):
         if len(available) < extra_count:
             available = attribute_ids[:]
         return random.sample(available, extra_count) if extra_count > 0 and available else []
+
+    def _filter_shared_attributes(self, category_id: int, attribute_ids: List[int]) -> List[int]:
+        """Return attributes that are not shared for the category."""
+        shared = set(self.loader.category_shared_attributes.get(category_id, []))
+        return [aid for aid in attribute_ids if aid not in shared]
+
+    def _ensure_min_candidates(self, candidates: List[int], all_attributes: List[int]) -> List[int]:
+        """Ensure there are enough candidates; fallback to all attributes if needed."""
+        if len(candidates) < self.optional_pool_size:
+            return all_attributes[:]
+        return candidates
+
+    def _pick_optional_attributes(self, candidates: List[int]) -> List[int]:
+        """Pick random attributes from candidates, limited by optional_pool_size."""
+        if self.optional_pool_size == 0 or not candidates:
+            return []
+        unique_candidates = list(dict.fromkeys(candidates))
+        sample_size = min(self.optional_pool_size, len(unique_candidates))
+        return random.sample(unique_candidates, sample_size)
 
 __all__ = ["CategoryHelper"]
 
