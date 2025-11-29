@@ -168,10 +168,16 @@ QUERIES = {
 # ///////////////////////////////////////////////////////////////////////////////
     #Analityczne  i optymalizacyjne
     14: ("Najczęściej wybierane warianty w koszykach", """
-        SELECT v.sku, p.name AS product_name, SUM(ci.quantity) AS total_quantity
-        FROM "CartItem" ci
-        JOIN "Variant" v ON v.id = ci.variant_id
-        JOIN "Product" p ON p.id = v.product_id
+         SELECT v.sku, p.name AS product_name, SUM(ci.quantity) AS total_quantity
+        FROM (
+            SELECT * FROM "CartItem" OFFSET 0
+        ) ci
+        JOIN (
+            SELECT * FROM "Variant" OFFSET 0
+        ) v ON v.id = ci.variant_id
+        JOIN (
+            SELECT * FROM "Product" OFFSET 0
+        ) p ON p.id = v.product_id
         GROUP BY v.sku, p.name
         ORDER BY total_quantity DESC
         LIMIT 10;
