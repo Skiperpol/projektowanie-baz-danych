@@ -6,7 +6,7 @@ QUERIES = {
         FROM (
             SELECT
                 o.id,
-                SUM(oi.unit_price * oi.quantity) AS total_price -- Poprawiono: dodano quantity
+                SUM(oi.unit_price * oi.quantity) AS total_price 
             FROM "Order" o
             JOIN "OrderItem" oi ON o.id = oi.order_id
             WHERE o.order_date >= NOW() - INTERVAL '1 month'
@@ -68,7 +68,7 @@ QUERIES = {
             SUM(unit_price * quantity) AS monthly_revenue
         FROM "OrderItem" oi
         JOIN "Order" o ON o.id = oi.order_id
-        WHERE o.order_date >= NOW() - INTERVAL '1 year' -- Zmieniono na 1 rok
+        WHERE o.order_date >= NOW() - INTERVAL '1 year' 
         GROUP BY 1
         ORDER BY 1 DESC;
 
@@ -411,7 +411,7 @@ QUERIES = {
     29: ("Top 5 Miast Generujących Największy Przychód (Wg. Adresu Wysyłki)", """
         SELECT
         a.city,
-        SUM(oi.unit_price * oi.quantity) AS city_revenue -- Poprawiono: dodano quantity
+        SUM(oi.unit_price * oi.quantity) AS city_revenue 
         FROM "Address" a
         JOIN "Order" o ON a.id = o.shipping_address_id
         JOIN "OrderItem" oi ON o.id = oi.order_id
@@ -449,10 +449,10 @@ QUERIES = {
         SELECT
             a.city,
             COUNT(*) FILTER (WHERE orders_count > 1) AS repeat_customers,
-            COUNT(DISTINCT o.user_id) AS total_customers, -- Poprawiono: zliczanie unikalnych użytkowników
+            COUNT(DISTINCT o.user_id) AS total_customers, 
             ROUND(
                 COUNT(*) FILTER (WHERE orders_count > 1) * 100.0 /
-                NULLIF(COUNT(DISTINCT o.user_id), 0), -- Poprawiono: zliczanie unikalnych użytkowników
+                NULLIF(COUNT(DISTINCT o.user_id), 0), 
                 2
             ) AS repeat_purchase_rate
         FROM orders_with_users o
