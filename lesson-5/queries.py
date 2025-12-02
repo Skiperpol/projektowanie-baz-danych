@@ -563,5 +563,5 @@ QUERIES = {
         ORDER BY repeat_purchase_rate DESC;
 
     """),
-}
+
 >>>>>>> b06e3038c5f98d9cfae6b540bd7d6ec878635357:lesson5/queries.py
