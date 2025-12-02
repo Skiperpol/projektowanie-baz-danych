@@ -1,6 +1,6 @@
 import psycopg2
 from datetime import datetime
-from lesson5.queries import QUERIES
+from new_queries import QUERIES
 import os
 
 
@@ -12,14 +12,13 @@ def log(text):
     with open(LOG_FILE, "a", encoding="utf-8") as f:
         f.write(text + "\n")
 
-#UZUPELNIC HOST, PASSWORD
-
 def run_explain_queries():
     conn = psycopg2.connect(
-        host="",
+        host="projectdatabase.cjy06esawu7e.eu-west-3.rds.amazonaws.com",
         database="postgres",
         user="postgres",
-        password=""
+        password="ciyoJLyVTY1dyCTGkAws",
+        port=5432
     )
     cur = conn.cursor()
 

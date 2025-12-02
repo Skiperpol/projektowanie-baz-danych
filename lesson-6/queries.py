@@ -100,16 +100,29 @@ QUERIES = {
     """),
 
     8: ("Stan magazynowy per produkt", """
+        WITH ProductStock AS (
+            SELECT
+                v.product_id,
+                1 AS quantity
+            FROM "SerialStockItem" ssi
+            JOIN "Variant" v ON ssi.variant_id = v.id
+            
+            UNION ALL
+            
+            SELECT
+                v.product_id,
+                bsi.quantity
+            FROM "BulkStockItem" bsi
+            JOIN "Variant" v ON bsi.variant_id = v.id
+        )
+        
         SELECT
-        p.name AS product_name,
-        COUNT(si.id) AS stock_count
+            p.name AS product_name,
+            SUM(ps.quantity) AS stock_count 
         FROM "Product" p
-        JOIN "Variant" v ON v.product_id = p.id
-        JOIN "StockItem" si ON si.variant_id = v.id
-        WHERE si.shipment_id IS NULL
+        JOIN ProductStock ps ON p.id = ps.product_id
         GROUP BY p.name
         ORDER BY stock_count DESC;
-
     """),
     
     9: ("Najpopularniejsze Kategorie (wg. Całkowitego Przychodu)", """

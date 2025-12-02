@@ -1,12 +1,12 @@
 QUERIES = {
     # Zapytania statystyczne i agregujące
     1: ("Średnia Wartość Zamówienia (AOV) w Ostatnim Miesiącu", """
-         SELECT
-        AVG(total_price)
+        SELECT
+            AVG(total_price)
         FROM (
             SELECT
-            o.id,
-            SUM(oi.unit_price) AS total_price
+                o.id,
+                SUM(oi.unit_price * oi.quantity) AS total_price -- Poprawiono: dodano quantity
             FROM "Order" o
             JOIN "OrderItem" oi ON o.id = oi.order_id
             WHERE o.order_date >= NOW() - INTERVAL '1 month'
@@ -14,21 +14,21 @@ QUERIES = {
         ) AS monthly_orders;
     """),
 
-    2: ("Średnia wartość zamówienia per użytkownik", """
+    2: ("Średnia wartość zamówienia per użytkownik - ZOPTYMALIZOWANA", """
         SELECT 
-        u.id, 
-        u.first_name, 
-        u.last_name,
-        ROUND(AVG(order_totals.total_price), 2) AS avg_order_value
+            u.id, 
+            u.first_name, 
+            u.last_name,
+            ROUND(AVG(oi_sum.total_price), 2) AS avg_order_value
         FROM "User" u
         JOIN "Order" o ON o.user_id = u.id
         JOIN (
             SELECT 
-                oi.order_id,
-                SUM(oi.unit_price) AS total_price
-            FROM "OrderItem" oi
-            GROUP BY oi.order_id
-        ) AS order_totals ON order_totals.order_id = o.id
+                order_id,
+                SUM(unit_price * quantity) AS total_price
+            FROM "OrderItem"
+            GROUP BY order_id
+        ) AS oi_sum ON oi_sum.order_id = o.id
         GROUP BY u.id, u.first_name, u.last_name
         ORDER BY avg_order_value DESC;
     """),
@@ -37,12 +37,11 @@ QUERIES = {
         SELECT
             p.name AS product_name,
             m.name AS manufacturer_name,
-            COUNT(*) AS total_units_sold
+            SUM(oi.quantity) AS total_units_sold 
         FROM "Product" p
         JOIN "Manufacturer" m ON p.manufacturer_id = m.id
         JOIN "Variant" v ON v.product_id = p.id
-        JOIN "StockItem" si ON si.variant_id = v.id
-        JOIN "OrderItem" oi ON oi.stock_item_id = si.id
+        JOIN "OrderItem" oi ON oi.variant_id = v.id
         JOIN "Order" o ON oi.order_id = o.id
         WHERE o.order_date >= NOW() - INTERVAL '3 months'
         GROUP BY p.name, m.name
@@ -66,68 +65,95 @@ QUERIES = {
     5: ("Całkowity Przychód Pogrupowany Miesięcznie za Ostatni Rok", """
         SELECT
             DATE_TRUNC('month', order_date)::date AS order_month,
-            SUM(unit_price) AS monthly_revenue
+            SUM(unit_price * quantity) AS monthly_revenue
         FROM "OrderItem" oi
         JOIN "Order" o ON o.id = oi.order_id
-        WHERE o.order_date >= date_trunc('year', now()) - interval '0 year'
+        WHERE o.order_date >= NOW() - INTERVAL '1 year' -- Zmieniono na 1 rok
         GROUP BY 1
         ORDER BY 1 DESC;
 
     """),
     
     6: ("Produkty najczęściej dodawane do ulubionych", """
-        SELECT p.id, p.name, COUNT(f.id) AS favorites_count
+        SELECT p.id, p.name, COUNT(f.user_id) AS favorites_count
         FROM "Product" p
         JOIN "FavoriteProduct" f ON f.product_id = p.id
         GROUP BY p.id, p.name
         ORDER BY favorites_count DESC
         LIMIT 10;
     """),
-
+    
     7: ("Dostępny Stan Magazynowy Wariantów Produktu Pogrupowany po Magazynach", """
+        WITH AvailableStock AS (
+            SELECT
+                ssi.variant_id,
+                ssi.warehouse_id,
+                1 AS quantity 
+            FROM "SerialStockItem" ssi
+            
+            UNION ALL
+            
+            SELECT
+                bsi.variant_id,
+                bsi.warehouse_id,
+                bsi.quantity 
+            FROM "BulkStockItem" bsi
+        )
+        
         SELECT
-        p.name AS product_name,
-        v.sku,
-        w.name AS warehouse_name,
-        COUNT(si.id) AS stock_count
-        FROM "StockItem" si
-        JOIN "Variant" v ON si.variant_id = v.id
+            p.name AS product_name,
+            v.sku,
+            w.name AS warehouse_name,
+            SUM(astock.quantity) AS stock_count 
+        FROM AvailableStock astock
+        JOIN "Variant" v ON astock.variant_id = v.id
         JOIN "Product" p ON v.product_id = p.id
-        JOIN "Warehouse" w ON si.warehouse_id = w.id
-        WHERE si.shipment_id IS NULL 
+        JOIN "Warehouse" w ON astock.warehouse_id = w.id
         GROUP BY p.name, v.sku, w.name
         ORDER BY p.name, w.name;
     """),
 
     8: ("Stan magazynowy per produkt", """
+        WITH ProductStock AS (
+            SELECT
+                v.product_id,
+                1 AS quantity
+            FROM "SerialStockItem" ssi
+            JOIN "Variant" v ON ssi.variant_id = v.id
+            
+            UNION ALL
+            
+            SELECT
+                v.product_id,
+                bsi.quantity
+            FROM "BulkStockItem" bsi
+            JOIN "Variant" v ON bsi.variant_id = v.id
+        )
+        
         SELECT
-        p.name AS product_name,
-        COUNT(si.id) AS stock_count
+            p.name AS product_name,
+            SUM(ps.quantity) AS stock_count 
         FROM "Product" p
-        JOIN "Variant" v ON v.product_id = p.id
-        JOIN "StockItem" si ON si.variant_id = v.id
-        WHERE si.shipment_id IS NULL
+        JOIN ProductStock ps ON p.id = ps.product_id
         GROUP BY p.name
         ORDER BY stock_count DESC;
-
     """),
     
     9: ("Najpopularniejsze Kategorie (wg. Całkowitego Przychodu)", """
         SELECT
-        c.name AS category_name,
-        SUM(oi.unit_price * oi.quantity) AS total_category_revenue
+            c.name AS category_name,
+            SUM(oi.unit_price * oi.quantity) AS total_category_revenue
         FROM "Category" c
         JOIN "ProductCategory" pc ON c.id = pc.category_id
         JOIN "Product" p ON pc.product_id = p.id
         JOIN "Variant" v ON p.id = v.product_id
-        JOIN "StockItem" si ON v.id = si.variant_id
-        JOIN "OrderItem" oi ON si.id = oi.stock_item_id
+        JOIN "OrderItem" oi ON v.id = oi.variant_id
         GROUP BY c.name
         ORDER BY total_category_revenue DESC
         LIMIT 10;
     """),
 
-     10: ("Liczba produktów per kategoria", """
+    10: ("Liczba produktów per kategoria", """
         SELECT c.name AS category_name, COUNT(pc.product_id) AS products_count
         FROM "Category" c
         LEFT JOIN "ProductCategory" pc ON pc.category_id = c.id
@@ -154,7 +180,7 @@ QUERIES = {
         ORDER BY avg_rating DESC NULLS LAST;
     """),
 
-     13: ("Aktywne promocje i objęta nimi liczba wariantów", """
+    13: ("Aktywne promocje i objęta nimi liczba wariantów", """
         SELECT pr.name AS promotion_name,
             COUNT(v.id) AS active_discount_items
         FROM "Promotion" pr
@@ -166,20 +192,23 @@ QUERIES = {
         """),
 
 # ///////////////////////////////////////////////////////////////////////////////
-    #Analityczne  i optymalizacyjne
+    #Analityczne  i optymalizacyjne
     14: ("Najczęściej wybierane warianty w koszykach", """
-         SELECT v.sku, p.name AS product_name, SUM(ci.quantity) AS total_quantity
-        FROM (
-            SELECT * FROM "CartItem" OFFSET 0
-        ) ci
-        JOIN (
-            SELECT * FROM "Variant" OFFSET 0
-        ) v ON v.id = ci.variant_id
-        JOIN (
-            SELECT * FROM "Product" OFFSET 0
-        ) p ON p.id = v.product_id
-        GROUP BY v.sku, p.name
-        ORDER BY total_quantity DESC
+        WITH RankedCartItems AS (
+            SELECT
+                variant_id,
+                SUM(quantity) AS total_quantity
+            FROM "CartItem"
+            GROUP BY variant_id
+        )
+        SELECT
+            v.sku,
+            p.name AS product_name,
+            rci.total_quantity
+        FROM RankedCartItems rci
+        JOIN "Variant" v ON v.id = rci.variant_id
+        JOIN "Product" p ON p.id = v.product_id   
+        ORDER BY rci.total_quantity DESC
         LIMIT 10;
     """),
 
@@ -187,7 +216,7 @@ QUERIES = {
         SELECT
             p.name AS product_name,
             v.sku,
-            p.price AS base_price,            
+            p.price AS base_price,              
             p.price + v.price_modifier AS final_variant_price,
             v.price_modifier AS price_difference
         FROM "Product" p
@@ -209,7 +238,7 @@ QUERIES = {
         ORDER BY orders_count DESC;
     """),
 
-   17: ("Top klienci wg wydatków", """
+    17: ("Top klienci wg wydatków", """
         SELECT u.id, u.first_name, u.last_name, SUM(oi.unit_price * oi.quantity) AS total_spent
         FROM "User" u
         JOIN "Order" o ON o.user_id = u.id
@@ -218,6 +247,7 @@ QUERIES = {
         ORDER BY total_spent DESC
         LIMIT 10;
     """),
+    
     18: ("Produkty z wariantami objętymi promocją, z końcową ceną", """
         SELECT p.name AS product_name, v.sku, 
                 p.price + v.price_modifier AS final_price,
@@ -230,14 +260,14 @@ QUERIES = {
         ORDER BY discounted_price ASC;
     """),
 
-     19: ("Użytkownicy, Którzy Dodali Produkt do Koszyka, Ale Nie Złożyli Zamówienia (Potencjał Odbudowy Koszyka)", """
-       WITH users_without_orders AS (
-        SELECT u.id, u.email
-        FROM "User" u
-        WHERE NOT EXISTS (
-            SELECT 1
-            FROM "Order" o
-            WHERE o.user_id = u.id
+    19: ("Użytkownicy, Którzy Dodali Produkt do Koszyka, Ale Nie Złożyli Zamówienia (Potencjał Odbudowy Koszyka)", """
+        WITH users_without_orders AS (
+            SELECT u.id, u.email
+            FROM "User" u
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM "Order" o
+                WHERE o.user_id = u.id
             )
         )
         SELECT u.email, p.name AS product_in_cart
@@ -246,13 +276,11 @@ QUERIES = {
         JOIN "CartItem" ci ON c.id = ci.cart_id
         JOIN "Variant" v ON ci.variant_id = v.id
         JOIN "Product" p ON v.product_id = p.id;
-
-
     """),
 #///////////////////////////////////////////////////////////////////////////////
     # Wyszukiwanie i kntestowe
 
-     20: ("Wyszukiwanie produktów po nazwie lub opisie (parametryzowane)", """
+    20: ("Wyszukiwanie produktów po nazwie lub opisie (parametryzowane)", """
         SELECT id, name, description, price
         FROM "Product"
         WHERE name ILIKE %s 
@@ -270,15 +298,32 @@ QUERIES = {
     """),
 
     22: ("Znajdź Magazyny, Które Posiadają Zapasy Konkretnego Wariantu (np. SKU='VR-000000-a637d44b7afd')", """
-       SELECT
-        w.name AS warehouse_name,
-        COUNT(si.id) AS stock_count
+        WITH VariantStock AS (
+            SELECT
+                bsi.warehouse_id,
+                bsi.quantity AS stock_units
+            FROM "BulkStockItem" bsi
+            JOIN "Variant" v ON bsi.variant_id = v.id
+            WHERE v.sku = 'VR-000001-2704de10f283'
+            
+            UNION ALL
+            
+            SELECT
+                ssi.warehouse_id,
+                1 AS stock_units 
+            FROM "SerialStockItem" ssi
+            JOIN "Variant" v ON ssi.variant_id = v.id
+            WHERE v.sku = 'VR-000001-2704de10f283'
+        )
+        
+        SELECT
+            w.name AS warehouse_name,
+            SUM(vs.stock_units) AS stock_count 
         FROM "Warehouse" w
-        JOIN "StockItem" si ON w.id = si.warehouse_id
-        JOIN "Variant" v ON si.variant_id = v.id
-        WHERE v.sku = 'VR-000001-2704de10f283' AND si.shipment_id IS NULL
+        JOIN VariantStock vs ON w.id = vs.warehouse_id
         GROUP BY w.name
-        HAVING COUNT(si.id) > 0;
+        HAVING SUM(vs.stock_units) > 0 
+        ORDER BY stock_count DESC;
     """),
 
     23: ("Warianty, Które Wymagają Uzyskania Konkretnej Opcji (np. 'Kolor'='Czerwony')", """
@@ -320,13 +365,6 @@ QUERIES = {
         WHERE p.id = 35;
     """),
 
-    26: ("Lista Wszystkich Dziecięcych Kategorii (Podkategorii) dla Konkretnej Kategorii Nadrzędnej (np. ID=5)", """
-        SELECT
-        name
-        FROM "Category"
-        WHERE parent_id = 5;
-    """),
-
     26: ("Wszystkie Warianty i Ich Ceny dla Konkretnego Produktu (np. ID=350259)", """
         SELECT
         v.sku,
@@ -352,7 +390,7 @@ QUERIES = {
 
 #/////////////////////////////////////////////////////////////////////////////
     # Złożone i porównawcze
-    27: ("Porównanie Średniej Oceny dla Promowanych i Niepromowanych Produktów", """
+    28: ("Porównanie Średniej Oceny dla Promowanych i Niepromowanych Produktów", """
         SELECT
         promotion_status,
         AVG(avg_rating) AS average_rating
@@ -370,10 +408,10 @@ QUERIES = {
     GROUP BY promotion_status;
     """),
 
-    28: ("Top 5 Miast Generujących Największy Przychód (Wg. Adresu Wysyłki)", """
+    29: ("Top 5 Miast Generujących Największy Przychód (Wg. Adresu Wysyłki)", """
         SELECT
         a.city,
-        SUM(oi.unit_price) AS city_revenue
+        SUM(oi.unit_price * oi.quantity) AS city_revenue -- Poprawiono: dodano quantity
         FROM "Address" a
         JOIN "Order" o ON a.id = o.shipping_address_id
         JOIN "OrderItem" oi ON o.id = oi.order_id
@@ -382,22 +420,24 @@ QUERIES = {
         LIMIT 5;
     """),
 
-    29: ("Porównanie Wolumenu Sprzedaży Produktów Promowanych vs. Niepromowanych (w Ostatnich 30 Dniach)", """
+    30: ("Porównanie Wolumenu Sprzedaży Produktów Promowanych vs. Niepromowanych (w Ostatnich 30 Dniach)", """
         SELECT
-        CASE WHEN v.promotion_id IS NOT NULL THEN 'Promowany' ELSE 'Niepromowany' END AS promotion_status,
-        COUNT(*) AS total_units_sold
+            CASE 
+                WHEN v.promotion_id IS NOT NULL THEN 'Promowany' 
+                ELSE 'Niepromowany' 
+            END AS promotion_status,
+            SUM(oi.quantity) AS total_units_sold 
         FROM "Order" o
         JOIN "OrderItem" oi ON o.id = oi.order_id
-        JOIN "StockItem" si ON oi.stock_item_id = si.id
-        JOIN "Variant" v ON si.variant_id = v.id
+        JOIN "Variant" v ON oi.variant_id = v.id 
         WHERE o.order_date >= NOW() - INTERVAL '30 days'
         GROUP BY promotion_status;
     """),
 
-    30: ("Wskaźnik Lojalności (Repeat Purchase Rate) Użytkowników z Podziałem na Miasto Adresu Rozliczeniowego", """
+    31: ("Wskaźnik Lojalności (Repeat Purchase Rate) Użytkowników z Podziałem na Miasto Adresu Rozliczeniowego", """
         WITH user_orders AS (
             SELECT user_id,
-                   COUNT(*) AS orders_count
+                    COUNT(*) AS orders_count
             FROM "Order"
             GROUP BY user_id
         ),
@@ -409,17 +449,16 @@ QUERIES = {
         SELECT
             a.city,
             COUNT(*) FILTER (WHERE orders_count > 1) AS repeat_customers,
-            COUNT(*) AS total_customers,
+            COUNT(DISTINCT o.user_id) AS total_customers, -- Poprawiono: zliczanie unikalnych użytkowników
             ROUND(
                 COUNT(*) FILTER (WHERE orders_count > 1) * 100.0 /
-                NULLIF(COUNT(*), 0),
+                NULLIF(COUNT(DISTINCT o.user_id), 0), -- Poprawiono: zliczanie unikalnych użytkowników
                 2
             ) AS repeat_purchase_rate
         FROM orders_with_users o
         JOIN "Address" a ON a.id = o.billing_address_id
         GROUP BY a.city
         ORDER BY repeat_purchase_rate DESC;
-
     """),
 
 }
