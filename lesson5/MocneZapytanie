@@ -7,7 +7,6 @@ DECLARE
     attr_cols TEXT;
     dyn_sql TEXT;
 BEGIN
-    -- 1. Pobieramy wszystkie atrybuty i generujemy kolumny pivot
     SELECT string_agg(
                format(
                    'COALESCE(MAX(CASE WHEN attribute_name = %L THEN value_count END),0) AS %I',
@@ -18,7 +17,6 @@ BEGIN
     INTO attr_cols
     FROM "Attribute";
 
-    -- 2. Tworzymy cały dynamiczny SQL jako string
     dyn_sql := 'WITH RECURSIVE category_path AS (
                     SELECT id, name, parent_id, name::TEXT AS path
                     FROM "Category"
@@ -48,7 +46,6 @@ BEGIN
                 GROUP BY category_path, product_name
                 ORDER BY category_path, product_name;';
 
-    -- 3. Wykonujemy dynamiczny SQL i zwracamy wynik
     RETURN QUERY EXECUTE dyn_sql;
 END;
 $$;
@@ -60,9 +57,9 @@ FROM "Attribute";
 
 
 #Potem trzeba wrzucic 
--- SELECT * 
--- FROM fn_product_attribute_pivot_true() AS t(
---     category_path TEXT,
---     product_name TEXT,
---     -- atrybuty
--- );
+SELECT * 
+FROM fn_product_attribute_pivot_true() AS t(
+    category_path TEXT,
+    product_name TEXT,
+    -- atrybuty
+);

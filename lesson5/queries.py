@@ -1,13 +1,16 @@
-# queries.py
 QUERIES = {
-    # Zapytania statystyczne i agregujące dla platformy e-commerce
+    # Zapytania statystyczne i agregujące
     1: ("Średnia Wartość Zamówienia (AOV) w Ostatnim Miesiącu", """
          SELECT
         AVG(total_price)
         FROM (
             SELECT
             o.id,
+<<<<<<< HEAD:lesson-5/queries.py
             SUM(oi.unit_price * oi.quantity) AS total_price
+=======
+            SUM(oi.unit_price) AS total_price
+>>>>>>> b06e3038c5f98d9cfae6b540bd7d6ec878635357:lesson5/queries.py
             FROM "Order" o
             JOIN "OrderItem" oi ON o.id = oi.order_id
             WHERE o.order_date >= NOW() - INTERVAL '1 month'
@@ -26,7 +29,11 @@ QUERIES = {
         JOIN (
             SELECT 
                 oi.order_id,
+<<<<<<< HEAD:lesson-5/queries.py
                 SUM(oi.unit_price * oi.quantity) AS total_price
+=======
+                SUM(oi.unit_price) AS total_price
+>>>>>>> b06e3038c5f98d9cfae6b540bd7d6ec878635357:lesson5/queries.py
             FROM "OrderItem" oi
             GROUP BY oi.order_id
         ) AS order_totals ON order_totals.order_id = o.id
@@ -36,6 +43,7 @@ QUERIES = {
 
     3: ("Top 10 Najlepiej Sprzedających Się Produktów (wg. Ilości Sprzedanych Jednostek) w Ostatnim Kwartale", """
         SELECT
+<<<<<<< HEAD:lesson-5/queries.py
         p.name AS product_name,
         m.name AS manufacturer_name,
         SUM(oi.quantity) AS total_units_sold
@@ -43,6 +51,16 @@ QUERIES = {
         JOIN "Manufacturer" m ON p.manufacturer_id = m.id
         JOIN "Variant" v ON v.product_id = p.id
         JOIN "OrderItem" oi ON oi.variant_id = v.id
+=======
+            p.name AS product_name,
+            m.name AS manufacturer_name,
+            COUNT(*) AS total_units_sold
+        FROM "Product" p
+        JOIN "Manufacturer" m ON p.manufacturer_id = m.id
+        JOIN "Variant" v ON v.product_id = p.id
+        JOIN "StockItem" si ON si.variant_id = v.id
+        JOIN "OrderItem" oi ON oi.stock_item_id = si.id
+>>>>>>> b06e3038c5f98d9cfae6b540bd7d6ec878635357:lesson5/queries.py
         JOIN "Order" o ON oi.order_id = o.id
         WHERE o.order_date >= NOW() - INTERVAL '3 months'
         GROUP BY p.name, m.name
@@ -51,16 +69,21 @@ QUERIES = {
     """),
 
     4: ("Top 5 produktów z najwięcej recenzjami", """
-        SELECT p.id, p.name, COUNT(r.id) AS reviews_count
+        SELECT p.id, p.name, COALESCE(r.count, 0) AS reviews_count
         FROM "Product" p
-        LEFT JOIN "Review" r ON r.product_id = p.id
-        GROUP BY p.id, p.name
+        LEFT JOIN (
+            SELECT product_id, COUNT(*) AS count
+            FROM "Review"
+            GROUP BY product_id
+        ) r ON p.id = r.product_id
         ORDER BY reviews_count DESC
         LIMIT 5;
+
     """),
     
     5: ("Całkowity Przychód Pogrupowany Miesięcznie za Ostatni Rok", """
         SELECT
+<<<<<<< HEAD:lesson-5/queries.py
         DATE_TRUNC('month', o.order_date)::date AS order_month,
         SUM(oi.unit_price * oi.quantity) AS monthly_revenue
         FROM "Order" o
@@ -68,6 +91,16 @@ QUERIES = {
         WHERE o.order_date >= NOW() - INTERVAL '1 year'
         GROUP BY order_month
         ORDER BY order_month DESC;
+=======
+            DATE_TRUNC('month', order_date)::date AS order_month,
+            SUM(unit_price) AS monthly_revenue
+        FROM "OrderItem" oi
+        JOIN "Order" o ON o.id = oi.order_id
+        WHERE o.order_date >= date_trunc('year', now()) - interval '0 year'
+        GROUP BY 1
+        ORDER BY 1 DESC;
+
+>>>>>>> b06e3038c5f98d9cfae6b540bd7d6ec878635357:lesson5/queries.py
     """),
     
     6: ("Produkty najczęściej dodawane do ulubionych", """
@@ -95,12 +128,20 @@ QUERIES = {
     """),
 
     8: ("Stan magazynowy per produkt", """
+<<<<<<< HEAD:lesson-5/queries.py
         SELECT p.name AS product_name, SUM(CASE WHEN si.shipment_id IS NULL THEN 1 ELSE 0 END) AS stock_count
+=======
+        SELECT
+        p.name AS product_name,
+        COUNT(si.id) AS stock_count
+>>>>>>> b06e3038c5f98d9cfae6b540bd7d6ec878635357:lesson5/queries.py
         FROM "Product" p
         JOIN "Variant" v ON v.product_id = p.id
         JOIN "StockItem" si ON si.variant_id = v.id
+        WHERE si.shipment_id IS NULL
         GROUP BY p.name
         ORDER BY stock_count DESC;
+
     """),
     
     9: ("Najpopularniejsze Kategorie (wg. Całkowitego Przychodu)", """
@@ -137,7 +178,7 @@ QUERIES = {
     """),
 
     12: ("Średnia ocena per producent", """
-        SELECT m.name AS manufacturer, AVG(r.rating) AS avg_rating
+        SELECT m.name AS manufacturer, ROUND(AVG(r.rating), 2) AS avg_rating
         FROM "Manufacturer" m
         JOIN "Product" p ON p.manufacturer_id = m.id
         LEFT JOIN "Review" r ON r.product_id = p.id
@@ -157,7 +198,7 @@ QUERIES = {
         """),
 
 # ///////////////////////////////////////////////////////////////////////////////
-    #Analityczne i optymalizacyjne
+    #Analityczne  i optymalizacyjne
     14: ("Najczęściej wybierane warianty w koszykach", """
         SELECT v.sku, p.name AS product_name, SUM(ci.quantity) AS total_quantity
         FROM "CartItem" ci
@@ -167,6 +208,7 @@ QUERIES = {
         ORDER BY total_quantity DESC
         LIMIT 10;
     """),
+<<<<<<< HEAD:lesson-5/queries.py
     15: ("Produkty z Największą Różnicą Między Ceną Podstawową a Ceną Wariantu", """
        SELECT
         p.name AS product_name,
@@ -174,9 +216,19 @@ QUERIES = {
         p.price AS base_price,
         v.price_modifier AS discount_percentage,
         p.price * (1 - v.price_modifier / 100) AS final_variant_price
+=======
+
+    15: ("Produkty z Największą Różnicą Między Ceną Podstawową a Ceną Wariantu", """
+        SELECT
+            p.name AS product_name,
+            v.sku,
+            p.price AS base_price,            
+            p.price + v.price_modifier AS final_variant_price,
+            v.price_modifier AS price_difference
+>>>>>>> b06e3038c5f98d9cfae6b540bd7d6ec878635357:lesson5/queries.py
         FROM "Product" p
         JOIN "Variant" v ON p.id = v.product_id
-        ORDER BY v.price_modifier DESC
+        ORDER BY price_difference DESC
         LIMIT 10;
     """),
 
@@ -202,12 +254,17 @@ QUERIES = {
         ORDER BY total_spent DESC
         LIMIT 10;
     """),
-
     18: ("Produkty z wariantami objętymi promocją, z końcową ceną", """
         SELECT p.name AS product_name, v.sku, 
+<<<<<<< HEAD:lesson-5/queries.py
                 p.price * (1 + v.price_modifier / 100) AS final_price,
                 pr.discount_percentage, 
                 (p.price * (1 + v.price_modifier / 100)) * (1 - pr.discount_percentage / 100) AS discounted_price
+=======
+                p.price + v.price_modifier AS final_price,
+                pr.discount_percentage * 100 AS discount_percentage, 
+                ROUND((p.price + v.price_modifier) * (1 - pr.discount_percentage), 2) AS discounted_price
+>>>>>>> b06e3038c5f98d9cfae6b540bd7d6ec878635357:lesson5/queries.py
         FROM "Variant" v
         JOIN "Product" p ON p.id = v.product_id
         JOIN "Promotion" pr ON pr.id = v.promotion_id
@@ -216,13 +273,27 @@ QUERIES = {
     """),
 
      19: ("Użytkownicy, Którzy Dodali Produkt do Koszyka, Ale Nie Złożyli Zamówienia (Potencjał Odbudowy Koszyka)", """
+<<<<<<< HEAD:lesson-5/queries.py
        SELECT DISTINCT
         u.email,
         p.name AS product_in_cart
+=======
+       WITH users_without_orders AS (
+        SELECT u.id, u.email
+>>>>>>> b06e3038c5f98d9cfae6b540bd7d6ec878635357:lesson5/queries.py
         FROM "User" u
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM "Order" o
+            WHERE o.user_id = u.id
+            )
+        )
+        SELECT u.email, p.name AS product_in_cart
+        FROM users_without_orders u
         JOIN "Cart" c ON u.id = c.user_id
         JOIN "CartItem" ci ON c.id = ci.cart_id
         JOIN "Variant" v ON ci.variant_id = v.id
+<<<<<<< HEAD:lesson-5/queries.py
         JOIN "Product" p ON v.product_id = p.id
         LEFT JOIN "Order" o ON u.id = o.user_id
         WHERE o.id IS NULL;
@@ -230,13 +301,26 @@ QUERIES = {
     """),
 #///////////////////////////////////////////////////////////////////////////////
 
+=======
+        JOIN "Product" p ON v.product_id = p.id;
+
+
+    """),
+#///////////////////////////////////////////////////////////////////////////////
+>>>>>>> b06e3038c5f98d9cfae6b540bd7d6ec878635357:lesson5/queries.py
     # Wyszukiwanie i kntestowe
+
      20: ("Wyszukiwanie produktów po nazwie lub opisie (parametryzowane)", """
         SELECT id, name, description, price
         FROM "Product"
+<<<<<<< HEAD:lesson-5/queries.py
         WHERE name ILIKE '%' || :search_term || '%' 
         OR description ILIKE '%' || :search_term || '%';
 
+=======
+        WHERE name ILIKE %s 
+        OR description ILIKE %s;
+>>>>>>> b06e3038c5f98d9cfae6b540bd7d6ec878635357:lesson5/queries.py
     """),
 
     21: ("Użytkownicy, Którzy Zapisali Konkretny Produkt jako Ulubiony (np. Product ID=350259)", """
@@ -246,7 +330,11 @@ QUERIES = {
         u.last_name
         FROM "User" u
         JOIN "FavoriteProduct" fp ON u.id = fp.user_id
+<<<<<<< HEAD:lesson-5/queries.py
         WHERE fp.product_id = 350259;
+=======
+        WHERE fp.product_id = 35;
+>>>>>>> b06e3038c5f98d9cfae6b540bd7d6ec878635357:lesson5/queries.py
     """),
 
     22: ("Znajdź Magazyny, Które Posiadają Zapasy Konkretnego Wariantu (np. SKU='VR-000000-a637d44b7afd')", """
@@ -256,12 +344,21 @@ QUERIES = {
         FROM "Warehouse" w
         JOIN "StockItem" si ON w.id = si.warehouse_id
         JOIN "Variant" v ON si.variant_id = v.id
+<<<<<<< HEAD:lesson-5/queries.py
         WHERE v.sku = 'VR-000000-a637d44b7afd' AND si.shipment_id IS NULL
         GROUP BY w.name
         HAVING COUNT(si.id) > 0;
     """),
     #To nie wiem czy działa
     24: ("Warianty, Które Wymagają Uzyskania Konkretnej Opcji (np. 'Kolor'='Czerwony')", """
+=======
+        WHERE v.sku = 'VR-000001-2704de10f283' AND si.shipment_id IS NULL
+        GROUP BY w.name
+        HAVING COUNT(si.id) > 0;
+    """),
+
+    23: ("Warianty, Które Wymagają Uzyskania Konkretnej Opcji (np. 'Kolor'='Czerwony')", """
+>>>>>>> b06e3038c5f98d9cfae6b540bd7d6ec878635357:lesson5/queries.py
         SELECT
         v.sku,
         p.name AS product_name
@@ -270,10 +367,10 @@ QUERIES = {
         JOIN "VariantOption" vo ON v.id = vo.variant_id
         JOIN "Option" opt ON vo.option_id = opt.id
         JOIN "Attribute" a ON opt.attribute_id = a.id
-        WHERE a.name = 'Kolor' AND opt.value = 'Czerwony';
+        WHERE a.name = 'Attr_49_Century' AND opt.value = 'do';
     """),
 
-    25: ("Znajdź Zamówienia Użytkownika (np. email='jan.kowalski@example.com') o Statusie 'W trakcie realizacji'", """
+    24: ("Znajdź Zamówienia Użytkownika (np. email='debbie.lane.16786.50af0753@example.com') o Statusie 'Paid'", """
         SELECT
         o.id AS order_id,
         o.order_date,
@@ -281,7 +378,30 @@ QUERIES = {
         FROM "Order" o
         JOIN "User" u ON o.user_id = u.id
         JOIN "Status" s ON o.status_id = s.id
-        WHERE u.email = 'jan.kowalski@example.com' AND s.name = 'W trakcie realizacji';
+        WHERE u.email = 'debbie.lane.16786.50af0753@example.com' AND s.name = 'Paid';
+    """),
+
+    25: ("Wszystkie Warianty i Ich Ceny dla Konkretnego Produktu (np. ID=350259)", """
+        SELECT
+        v.sku,
+        a.name AS attribute_name,
+        opt.value AS option_value,
+        p.price AS base_price,
+        v.price_modifier,
+        p.price + v.price_modifier AS current_price
+        FROM "Product" p
+        JOIN "Variant" v ON p.id = v.product_id
+        LEFT JOIN "VariantOption" vo ON v.id = vo.variant_id
+        LEFT JOIN "Option" opt ON vo.option_id = opt.id
+        LEFT JOIN "Attribute" a ON opt.attribute_id = a.id
+        WHERE p.id = 35;
+    """),
+
+    26: ("Lista Wszystkich Dziecięcych Kategorii (Podkategorii) dla Konkretnej Kategorii Nadrzędnej (np. ID=5)", """
+        SELECT
+        name
+        FROM "Category"
+        WHERE parent_id = 5;
     """),
 
     26: ("Wszystkie Warianty i Ich Ceny dla Konkretnego Produktu (np. ID=350259)", """
@@ -309,6 +429,7 @@ QUERIES = {
 
 #/////////////////////////////////////////////////////////////////////////////
     # Złożone i porównawcze
+<<<<<<< HEAD:lesson-5/queries.py
 
     28: ("Porównanie Średniej Oceny dla Promowanych i Niepromowanych Produktów", """
         SELECT
@@ -332,6 +453,30 @@ QUERIES = {
         SELECT
         a.city,
         SUM(oi.unit_price * oi.quantity) AS city_revenue
+=======
+    27: ("Porównanie Średniej Oceny dla Promowanych i Niepromowanych Produktów", """
+        SELECT
+        promotion_status,
+        AVG(avg_rating) AS average_rating
+        FROM (
+        SELECT
+            p.id,
+            CASE WHEN EXISTS (
+                SELECT 1 FROM "Variant" v2 WHERE v2.product_id = p.id AND v2.promotion_id IS NOT NULL
+            ) THEN 'Promowany' ELSE 'Niepromowany' END AS promotion_status,
+            AVG(r.rating) AS avg_rating
+        FROM "Product" p
+        JOIN "Review" r ON p.id = r.product_id
+        GROUP BY p.id
+        ) sub
+    GROUP BY promotion_status;
+    """),
+
+    28: ("Top 5 Miast Generujących Największy Przychód (Wg. Adresu Wysyłki)", """
+        SELECT
+        a.city,
+        SUM(oi.unit_price) AS city_revenue
+>>>>>>> b06e3038c5f98d9cfae6b540bd7d6ec878635357:lesson5/queries.py
         FROM "Address" a
         JOIN "Order" o ON a.id = o.shipping_address_id
         JOIN "OrderItem" oi ON o.id = oi.order_id
@@ -340,6 +485,7 @@ QUERIES = {
         LIMIT 5;
     """),
 
+<<<<<<< HEAD:lesson-5/queries.py
     30: ("Porównanie Wolumenu Sprzedaży Produktów Promowanych vs. Niepromowanych (w Ostatnich 30 Dniach)", """
         SELECT
         CASE WHEN v.promotion_id IS NOT NULL THEN 'Promowany' ELSE 'Niepromowany' END AS promotion_status,
@@ -347,10 +493,21 @@ QUERIES = {
         FROM "Order" o
         JOIN "OrderItem" oi ON o.id = oi.order_id
         JOIN "Variant" v ON oi.variant_id = v.id
+=======
+    29: ("Porównanie Wolumenu Sprzedaży Produktów Promowanych vs. Niepromowanych (w Ostatnich 30 Dniach)", """
+        SELECT
+        CASE WHEN v.promotion_id IS NOT NULL THEN 'Promowany' ELSE 'Niepromowany' END AS promotion_status,
+        COUNT(*) AS total_units_sold
+        FROM "Order" o
+        JOIN "OrderItem" oi ON o.id = oi.order_id
+        JOIN "StockItem" si ON oi.stock_item_id = si.id
+        JOIN "Variant" v ON si.variant_id = v.id
+>>>>>>> b06e3038c5f98d9cfae6b540bd7d6ec878635357:lesson5/queries.py
         WHERE o.order_date >= NOW() - INTERVAL '30 days'
         GROUP BY promotion_status;
     """),
 
+<<<<<<< HEAD:lesson-5/queries.py
     31: ("Wskaźnik Lojalności (Repeat Purchase Rate) Użytkowników z Podziałem na Miasto Adresu Rozliczeniowego", """
         SELECT
             a.city,
@@ -372,3 +529,33 @@ QUERIES = {
         ORDER BY repeat_purchase_rate DESC;
     """),
 }
+=======
+    30: ("Wskaźnik Lojalności (Repeat Purchase Rate) Użytkowników z Podziałem na Miasto Adresu Rozliczeniowego", """
+        WITH user_orders AS (
+            SELECT user_id,
+                   COUNT(*) AS orders_count
+            FROM "Order"
+            GROUP BY user_id
+        ),
+        orders_with_users AS (
+            SELECT o.id, o.user_id, o.billing_address_id, u.orders_count
+            FROM "Order" o
+            JOIN user_orders u ON u.user_id = o.user_id
+        )
+        SELECT
+            a.city,
+            COUNT(*) FILTER (WHERE orders_count > 1) AS repeat_customers,
+            COUNT(*) AS total_customers,
+            ROUND(
+                COUNT(*) FILTER (WHERE orders_count > 1) * 100.0 /
+                NULLIF(COUNT(*), 0),
+                2
+            ) AS repeat_purchase_rate
+        FROM orders_with_users o
+        JOIN "Address" a ON a.id = o.billing_address_id
+        GROUP BY a.city
+        ORDER BY repeat_purchase_rate DESC;
+
+    """),
+}
+>>>>>>> b06e3038c5f98d9cfae6b540bd7d6ec878635357:lesson5/queries.py

@@ -39,8 +39,7 @@ BEGIN
         JOIN "Option" o ON o.attribute_id = a.id
         JOIN "VariantOption" vo ON vo.option_id = o.id
         GROUP BY pa.product_id, a.name
-    )
-
+    ),
 
     product_attrs AS (
         SELECT
