@@ -7,13 +7,13 @@ load_dotenv()
 
 class DB:
     def __init__(self):
-        self.host = os.getenv("PGHOST", "localhost")
+        self.host = os.getenv("PGHOST", "projectdatabase.cjy06esawu7e.eu-west-3.rds.amazonaws.com")
         self.port = int(os.getenv("PGPORT", 5432))
         self.user = os.getenv("PGUSER", "postgres")
-        self.password = os.getenv("PGPASSWORD", "postgres")
+        self.password = os.getenv("PGPASSWORD", "ciyoJLyVTY1dyCTGkAws")
         self.dbname = os.getenv("PGDATABASE", "postgres")
         self.batch_size = int(os.getenv("BATCH_SIZE", 50000))
-        self.delete_all_data = os.getenv("DELETE_ALL_DATA", "false").lower() in ("true", "1", "yes")
+        self.delete_all_data = os.getenv("DELETE_ALL_DATA", "true").lower() in ("true", "1", "yes")
         self.psycopg2_params = {
             "host": self.host,
             "port": self.port,
