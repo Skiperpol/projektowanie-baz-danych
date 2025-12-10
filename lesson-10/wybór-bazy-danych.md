@@ -1,5 +1,14 @@
 ## Wybraną przez nas technologią jest MongoDB (baza dokumentowa).
 
+| Typ Bazy Danych | Przykłady | Zalety (Kiedy Używać) | Wady (Ograniczenia) | Zastosowanie w Twoim E-commerce |
+| :--- | :--- | :--- | :--- | :--- |
+| **1. Dokumentowa** | MongoDB, Couchbase, Firestore | * **Naturalny model dla JSON:** Idealna dla złożonych, hierarchicznych danych (Karta Produktu). * **Elastyczny Schemat:** Łatwa zmiana atrybutów bez migracji. * **Wysoka Wydajność Odczytu:** Wszystkie powiązane dane w jednym dokumencie. | * **Redundancja Danych:** Wymaga ręcznej aktualizacji wielu dokumentów przy zmianie metadanych (np. nazwy producenta). * **Złożone Transakcje:** Wymaga użycia transakcji wielodokumentowych (wolniejsze niż pojedynczy zapis). | **GŁÓWNY WYBÓR:** Idealna dla **`products`**, **`users`**, **`orders`** i **`reviews`**. |
+| **2. Klucz-Wartość** | Redis, Memcached, DynamoDB | * **Ekstremalna Szybkość:** Najszybsza do prostych operacji GET/PUT (odczyt/zapis). * **Wysoka Skalowalność:** Prosty model danych ułatwia horyzontalne skalowanie. * **Idealna dla Caching (pamięć podręczna):** Niskie opóźnienia. | * **Brak Relacji/Zapytań:** Nie da się wyszukiwać po wartości, tylko po kluczu. * **Brak Elastyczności:** Dane muszą być spłaszczone i z góry określone. | **WSPARCIE:** Idealna dla **`carts`** (sesje koszyków) oraz **sesji użytkowników** (jako pamięć podręczna). |
+| **3. Kolumnowa (Wide-Column)** | Cassandra, HBase | * **Ekstremalna Skalowalność:** Zaprojektowana do obsługi ogromnych ilości danych na tysiącach serwerów. * **Idealna dla Time-Series:** Zapis dużej ilości danych szeregów czasowych/logów. * **Wysoka Dostępność.** | * **Złożona Konfiguracja:** Wymaga doświadczonej administracji. * **Słaba na Relacje:** Brak joinów. * **Optymalizowana pod DYSK, nie pod pamięć RAM** (wolniejsza niż Redis). | **NIEZALECANA/OPCJONALNA:** Mogłaby służyć do przechowywania **logów ruchu** lub **historii zmian magazynowych** (Event Sourcing). |
+| **4. Grafowa** | Neo4j, ArangoDB | * **Wysoka Wydajność Relacji:** Zaprojektowana do analizy powiązań (np. Znajomi, Droga dostawy). * **Naturalne Modelowanie Sieci:** Idealna do rekomendacji ("Klienci, którzy kupili X, kupili również Y"). | * **Słaba na Proste Operacje:** Powolna dla prostych odczytów katalogowych. * **Skalowalność Horyzontalna:** Trudniejsza niż w bazach dokumentowych. | **NISZOWA:** Idealna do silnika **rekomendacji** produktów, ale nie do głównego katalogu. |
+
+---
+
 Postawiliśmy na bazę danych dukumentową, ponieważ nasz sklep jest często odczytywany, a rzedziej modyfikowany. Dodatkowo struktura "Warianty-Opcje-Atrybuty" w SQL jest skomplikowana i wolna, w przeciwieństwie do MongoDB gdzie jest to narutalna struktura JSON.
 
 ## Wybór i uzasadnienie technologii
