@@ -39,7 +39,7 @@
   "review_count": 124,
   "variants": [
     {
-      "_id": ObjectId("6580abc..."),
+      "_id": { "$oid": "6580abc00000000000000001" },
       "sku": "SONY-NC-BLK",
       "base_price": { "$numberDecimal": "1200.00" },
       "attributes": { "color": "Black" },
@@ -47,16 +47,16 @@
       "current_promotion": { 
         "promo_id": "PROMO_WINTER_2025",
         "final_price": { "$numberDecimal": "1020.00" }
-        }
+      }
     },
     {
-      "_id": ObjectId("6580abc..."),
+      "_id": { "$oid": "6580abc00000000000000002" },
       "sku": "SONY-NC-SILVER",
       "base_price": { "$numberDecimal": "1250.00" },
       "attributes": { "color": "Silver" },
-      "inventory_type": "bulk",
+      "inventory_type": "bulk"
     }
-  ],
+  ]
 }
 ```
 
@@ -67,9 +67,9 @@
 ```
 {
   "warehouse_id": "wh_central",
-  "variant_id": ObjectId("6580..."),
+  "variant_id": { "$oid": "6580abc00000000000000001" },
   "quantity_on_hand": 100,
-  "quantity_reserved": 2,
+  "quantity_reserved": 2
 }
 ```
 
@@ -80,7 +80,7 @@
 ```
 {
   "serial_number": "SN-APPLE-999888777",
-  "variant_id": ObjectId("6580..."),
+  "variant_id": { "$oid": "6580abc00000000000000001" },
   "warehouse_id": "wh_central",
   "status": "AVAILABLE",
   "history": [
@@ -101,7 +101,7 @@
   "first_name": "Jan",
   "last_name": "Kowalski",
   "email": "jan@kowalski.pl",
-  "password_hash": "$2b$10$EixZAY...", 
+  "password_hash": "$2b$10$EixZAY...",
   "roles": ["user"],
   "addresses": [
     {
@@ -128,9 +128,9 @@
   "updated_at": { "$date": "2025-12-17T12:00:00Z" },
   "items": [
     {
-      "variant_id": ObjectId("6580abc..."),
+      "variant_id": { "$oid": "6580abc00000000000000001" },
       "product_id": "prod_1001",
-      "quantity": 1,
+      "quantity": 1
     }
   ]
 }
@@ -204,7 +204,7 @@
     "email": "support@sony.pl",
     "phone": "+48 22 123 45 67"
   },
-  "active": true,
+  "active": true
 }
 ```
 
@@ -214,9 +214,9 @@
 
 ```
 {
-  "_id": ObjectId("6580..."), 
+  "_id": { "$oid": "6580abc00000000000000123" },
   "user_id": "user_555",
-  "product_id": "prod_1001", 
+  "product_id": "prod_1001",
   "added_at": { "$date": "2025-12-17T12:00:00Z" }
 }
 ```
