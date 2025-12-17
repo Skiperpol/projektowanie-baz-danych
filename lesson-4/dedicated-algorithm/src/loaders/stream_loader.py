@@ -218,5 +218,5 @@ class StreamLoader:
             else:
                 self._load_generic(table_name, columns, count, batch)
             elapsed = time.time() - start
-            print(f"-> Done {table_name} in {elapsed:.1f}s")
+            print(f"-> Done {table_name} in {elapsed:.1f}s [{time.strftime('%H:%M:%S')}]")
 

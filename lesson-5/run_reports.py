@@ -2,7 +2,7 @@ import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
-from queries import QUERIES
+from new_queries import QUERIES
 
 try:
     from tabulate import tabulate
