@@ -1,0 +1,12 @@
+{
+  "warehouses": 5,
+  "manufacturers": 10,
+  "users": 2000,
+  "products": 3000,
+  "variants": 6000,
+  "inventory_bulk": 6000,
+  "carts": 1500,
+  "orders": 3000,
+  "reviews": 4000,
+  "promotions": 10
+}
