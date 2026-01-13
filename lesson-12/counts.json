@@ -1,0 +1,13 @@
+{
+  "manufacturers": 10,
+  "warehouses": 5,
+  "users": 100,
+  "products": 50,
+  "promotions": 8,
+  "carts": 60,
+  "orders": 200,
+  "reviews": 150,
+  "user_favorites": 80,
+  "inventory_bulk": 200,
+  "inventory_serial": 50
+}
