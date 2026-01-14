@@ -1,7 +1,8 @@
 from bson import ObjectId
-from config import get_db
+from config import get_db, insert_in_batches
 from datetime import datetime, timedelta
 import random
+
 
 def generate_carts(count, user_ids, product_ids):
     """Generate carts collection"""
@@ -16,14 +17,11 @@ def generate_carts(count, user_ids, product_ids):
         print("No products found. Please generate products first.")
         return []
     
-    # Get all products with their variants
     products = list(db.products.find({"_id": {"$in": product_ids}}))
     
-    # Create carts for some users (not all users have carts)
     users_with_carts = random.sample(user_ids, k=min(count, len(user_ids)))
     
     for user_id in users_with_carts:
-        # Each cart has 1-5 items
         num_items = random.randint(1, 5)
         items = []
         
@@ -53,7 +51,7 @@ def generate_carts(count, user_ids, product_ids):
             carts.append(cart)
     
     if carts:
-        db.carts.insert_many(carts)
+        insert_in_batches(db.carts, carts, batch_size=2000)
         print(f"Generated {len(carts)} carts")
         return [c["_id"] for c in carts]
     return []
