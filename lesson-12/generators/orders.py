@@ -1,4 +1,5 @@
 from bson import ObjectId
+from bson.decimal128 import Decimal128
 from faker import Faker
 from config import get_db, to_decimal
 from datetime import datetime, timedelta
@@ -86,9 +87,15 @@ def generate_orders(count, user_ids, product_ids):
             
             # Get price (promotion price if available, otherwise base price)
             if variant.get("current_promotion"):
-                unit_price = float(variant["current_promotion"]["final_price"])
+                raw_price = variant["current_promotion"]["final_price"]
             else:
-                unit_price = float(variant["base_price"])
+                raw_price = variant["base_price"]
+
+            # Handle Decimal128 from MongoDB
+            if isinstance(raw_price, Decimal128):
+                unit_price = float(raw_price.to_decimal())
+            else:
+                unit_price = float(raw_price)
             
             item_total = unit_price * quantity
             total_amount += item_total

@@ -1,6 +1,8 @@
 from bson import ObjectId
 from config import get_db
+from pymongo.errors import PyMongoError
 import random
+
 
 def generate_inventory_bulk(count, variants_info, warehouse_ids):
     """Generate inventory_bulk collection"""
@@ -55,7 +57,14 @@ def generate_inventory_bulk(count, variants_info, warehouse_ids):
         inventory_items.append(inventory_item)
     
     if inventory_items:
-        db.inventory_bulk.insert_many(inventory_items)
-        print(f"Generated {len(inventory_items)} bulk inventory items")
-        return [item["_id"] for item in inventory_items]
+        try:
+            db.inventory_bulk.insert_many(inventory_items)
+            print(f"Generated {len(inventory_items)} bulk inventory items")
+            return [item["_id"] for item in inventory_items]
+        except PyMongoError as e:
+            print("Error inserting inventory_bulk documents:", e)
+            if inventory_items:
+                print("Sample inventory_bulk document that failed validation:")
+                print(inventory_items[0])
+            return []
     return []

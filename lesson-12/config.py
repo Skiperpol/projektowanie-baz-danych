@@ -6,7 +6,7 @@ import json
 
 # MongoDB connection
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
-DATABASE_NAME = os.getenv('DATABASE_NAME', 'ecommerce_db')
+DATABASE_NAME = os.getenv('DATABASE_NAME', 'projektowanie-mongodb')
 
 # Load document counts
 def load_counts():
