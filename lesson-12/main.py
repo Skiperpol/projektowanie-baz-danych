@@ -18,7 +18,7 @@ from generators.reviews import generate_reviews
 from generators.user_favorites import generate_user_favorites
 
 def clear_database():
-    """Clear all collections (optional - uncomment if needed)"""
+    """Clear all collections"""
     db = get_db()
     collections = [
         'manufacturers', 'warehouses', 'users', 'products',

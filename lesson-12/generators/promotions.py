@@ -1,4 +1,5 @@
 from bson import ObjectId
+from bson.decimal128 import Decimal128
 from faker import Faker
 from config import get_db
 from datetime import datetime, timedelta
@@ -93,7 +94,13 @@ def apply_promotions_to_products(db, promotions, product_ids):
             # 20% chance to have promotion
             if random.random() < 0.2:
                 promo = random.choice(active_promotions)
-                base_price = float(variant["base_price"])
+
+                # base_price is stored as Decimal128 in MongoDB – convert safely to float
+                raw_price = variant["base_price"]
+                if isinstance(raw_price, Decimal128):
+                    base_price = float(raw_price.to_decimal())
+                else:
+                    base_price = float(raw_price)
                 
                 if promo["discount"]["type"] == "PERCENTAGE":
                     discount = promo["discount"]["value"]

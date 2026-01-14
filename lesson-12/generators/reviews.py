@@ -1,7 +1,9 @@
 from bson import ObjectId
 from config import get_db
 from datetime import datetime, timedelta
+from pymongo.errors import PyMongoError
 import random
+
 
 def generate_reviews(count, user_ids, product_ids):
     """Generate reviews collection"""
@@ -81,13 +83,20 @@ def generate_reviews(count, user_ids, product_ids):
         reviews.append(review)
     
     if reviews:
-        db.reviews.insert_many(reviews)
-        print(f"Generated {len(reviews)} reviews")
-        
-        # Update product review counts and avg_rating
-        update_product_reviews(db, product_ids)
-        
-        return [r["_id"] for r in reviews]
+        try:
+            db.reviews.insert_many(reviews)
+            print(f"Generated {len(reviews)} reviews")
+
+            # Update product review counts and avg_rating
+            update_product_reviews(db, product_ids)
+
+            return [r["_id"] for r in reviews]
+        except PyMongoError as e:
+            print("Error inserting reviews documents:", e)
+            if reviews:
+                print("Sample review document that failed validation:")
+                print(reviews[0])
+            return []
     return []
 
 def update_product_reviews(db, product_ids):
