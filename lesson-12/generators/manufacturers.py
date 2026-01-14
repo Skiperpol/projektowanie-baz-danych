@@ -1,9 +1,10 @@
 from bson import ObjectId
 from faker import Faker
-from config import get_db
+from config import get_db, insert_in_batches
 import random
 
 fake = Faker('pl_PL')
+
 
 def generate_manufacturers(count):
     """Generate manufacturers collection"""
@@ -21,7 +22,7 @@ def generate_manufacturers(count):
         manufacturer = {
             "_id": ObjectId(),
             "name": name,
-            "active": random.choice([True, True, True, False]),  # 75% active
+            "active": random.choice([True, True, True, False]),
             "description": fake.text(max_nb_chars=200),
             "website": f"https://www.{name.lower().replace(' ', '')}.com",
             "contact": {
@@ -37,7 +38,7 @@ def generate_manufacturers(count):
         manufacturers.append(manufacturer)
     
     if manufacturers:
-        db.manufacturers.insert_many(manufacturers)
+        insert_in_batches(db.manufacturers, manufacturers, batch_size=2000)
         print(f"Generated {len(manufacturers)} manufacturers")
         return [m["_id"] for m in manufacturers]
     return []

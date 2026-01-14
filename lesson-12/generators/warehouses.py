@@ -1,9 +1,10 @@
 from bson import ObjectId
 from faker import Faker
-from config import get_db
+from config import get_db, insert_in_batches
 import random
 
 fake = Faker('pl_PL')
+
 
 def generate_warehouses(count):
     """Generate warehouses collection"""
@@ -21,7 +22,7 @@ def generate_warehouses(count):
             "_id": ObjectId(),
             "name": f"Magazyn {warehouse_type.capitalize()} - {city}",
             "type": warehouse_type,
-            "is_active": random.choice([True, True, False]),  # 67% active
+            "is_active": random.choice([True, True, False]),
             "address": {
                 "street": fake.street_address(),
                 "city": city,
@@ -30,8 +31,7 @@ def generate_warehouses(count):
             }
         }
         
-        # Add location (GeoJSON) for some warehouses
-        if random.random() > 0.3:  # 70% have location
+        if random.random() > 0.3:
             warehouse["location"] = {
                 "type": "Point",
                 "coordinates": [
@@ -43,7 +43,7 @@ def generate_warehouses(count):
         warehouses.append(warehouse)
     
     if warehouses:
-        db.warehouses.insert_many(warehouses)
+        insert_in_batches(db.warehouses, warehouses, batch_size=2000)
         print(f"Generated {len(warehouses)} warehouses")
         return [w["_id"] for w in warehouses]
     return []

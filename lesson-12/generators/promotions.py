@@ -1,6 +1,7 @@
 from bson import ObjectId
+from bson.decimal128 import Decimal128
 from faker import Faker
-from config import get_db
+from config import get_db, insert_in_batches
 from datetime import datetime, timedelta
 import random
 
@@ -28,7 +29,6 @@ def generate_promotions(count, product_ids, category_ids):
     for i in range(count):
         name = promotion_names[i % len(promotion_names)] if i < len(promotion_names) else f"Promocja {i+1}"
         
-        # Random date range (some active, some past, some future)
         days_offset = random.randint(-60, 60)
         start_date = datetime.now() + timedelta(days=days_offset)
         end_date = start_date + timedelta(days=random.randint(7, 30))
@@ -70,12 +70,11 @@ def generate_promotions(count, product_ids, category_ids):
         promotions.append(promotion)
     
     if promotions:
-        db.promotions.insert_many(promotions)
+        insert_in_batches(db.promotions, promotions, batch_size=2000)
         print(f"Generated {len(promotions)} promotions")
-        
-        # Apply promotions to products
+
         apply_promotions_to_products(db, promotions, product_ids)
-        
+
         return [p["_id"] for p in promotions]
     return []
 
@@ -90,10 +89,14 @@ def apply_promotions_to_products(db, promotions, product_ids):
     
     for product in products:
         for variant in product.get("variants", []):
-            # 20% chance to have promotion
             if random.random() < 0.2:
                 promo = random.choice(active_promotions)
-                base_price = float(variant["base_price"])
+
+                raw_price = variant["base_price"]
+                if isinstance(raw_price, Decimal128):
+                    base_price = float(raw_price.to_decimal())
+                else:
+                    base_price = float(raw_price)
                 
                 if promo["discount"]["type"] == "PERCENTAGE":
                     discount = promo["discount"]["value"]

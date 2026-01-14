@@ -1,11 +1,12 @@
 from bson import ObjectId
 from faker import Faker
-from config import get_db
+from config import get_db, insert_in_batches
 from datetime import datetime, timedelta
 import random
 import hashlib
 
 fake = Faker('pl_PL')
+
 
 def generate_password_hash(password):
     """Simple password hash (in production use bcrypt)"""
@@ -24,7 +25,6 @@ def generate_users(count):
         email = f"{first_name.lower()}.{last_name.lower()}.{i}@{fake.domain_name()}"
         password = fake.password(length=12)
         
-        # Generate 1-3 addresses per user
         num_addresses = random.randint(1, 3)
         addresses = []
         for j in range(num_addresses):
@@ -34,7 +34,7 @@ def generate_users(count):
                 "city": fake.city(),
                 "postal_code": fake.postcode(),
                 "country": "PL",
-                "is_default_shipping": j == 0,  # First address is default
+                "is_default_shipping": j == 0,
                 "phone": fake.phone_number()
             }
             addresses.append(address)
@@ -52,7 +52,7 @@ def generate_users(count):
         users.append(user)
     
     if users:
-        db.users.insert_many(users)
+        insert_in_batches(db.users, users, batch_size=2000)
         print(f"Generated {len(users)} users")
         return [u["_id"] for u in users]
     return []

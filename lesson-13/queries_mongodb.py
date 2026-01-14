@@ -572,19 +572,19 @@ QUERIES_MONGODB = {
     ]),
 
    
-    # # do poprawy
-    # 26: ("Porównanie Średniej Oceny dla Promowanych i Niepromowanych Produktów", [
-    #     {"$unwind": "$variants"},
-    #     {"$lookup": {
-    #         "from": "reviews",
-    #         "localField": "_id",
-    #         "foreignField": "product_id",
-    #         "as": "reviews"
-    #     }},
-    #     {"$addFields": {"promotion_status": {"$cond": [{"$ifNull": ["$variants.current_promotion", False]}, "Promowany", "Niepromowany"]}}},
-    #     {"$unwind": "$reviews"},
-    #     {"$group": {"_id": "$promotion_status", "average_rating": {"$avg": "$reviews.rating"}}}
-    # ]),
+    # do poprawy
+    26: ("Porównanie Średniej Oceny dla Promowanych i Niepromowanych Produktów", [
+        {"$unwind": "$variants"},
+        {"$lookup": {
+            "from": "reviews",
+            "localField": "_id",
+            "foreignField": "product_id",
+            "as": "reviews"
+        }},
+        {"$addFields": {"promotion_status": {"$cond": [{"$ifNull": ["$variants.current_promotion", False]}, "Promowany", "Niepromowany"]}}},
+        {"$unwind": "$reviews"},
+        {"$group": {"_id": "$promotion_status", "average_rating": {"$avg": "$reviews.rating"}}}
+    ]),
 
     27: ("Top 5 Miast Generujących Największy Przychód (Wg. Adresu Wysyłki)", [
         {"$group": {"_id": "$shipping_address.city", "city_revenue": {"$sum": "$total_amount"}}},

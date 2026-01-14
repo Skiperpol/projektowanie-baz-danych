@@ -1,13 +1,13 @@
 {
-  "manufacturers": 10,
-  "warehouses": 5,
-  "users": 100,
-  "products": 50,
-  "promotions": 8,
-  "carts": 60,
-  "orders": 200,
-  "reviews": 150,
-  "user_favorites": 80,
-  "inventory_bulk": 200,
-  "inventory_serial": 50
+  "manufacturers": 100,
+  "warehouses": 50,
+  "users": 200000,
+  "products": 50000,
+  "promotions": 800,
+  "carts": 6000000,
+  "orders": 200000,
+  "reviews": 150000,
+  "user_favorites": 800000,
+  "inventory_bulk": 200000,
+  "inventory_serial": 25000
 }

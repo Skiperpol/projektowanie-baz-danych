@@ -1,11 +1,10 @@
 from bson import ObjectId
 from faker import Faker
-from config import get_db, to_decimal
+from config import get_db, to_decimal, insert_in_batches
 import random
 
 fake = Faker('pl_PL')
 
-# Product categories
 CATEGORIES = [
     {"id": ObjectId(), "name": "Audio"},
     {"id": ObjectId(), "name": "Elektronika"},
@@ -17,7 +16,6 @@ CATEGORIES = [
     {"id": ObjectId(), "name": "Smart Home"}
 ]
 
-# Product names and descriptions
 PRODUCT_TEMPLATES = [
     ("Słuchawki Bezprzewodowe", "Wysokiej klasy słuchawki z redukcją szumów", ["Black", "White", "Silver"]),
     ("Smartfon", "Nowoczesny smartfon z zaawansowanym aparatem", ["Black", "Blue", "White"]),
@@ -35,7 +33,7 @@ def generate_products(count, manufacturer_ids):
     """Generate products collection with variants"""
     db = get_db()
     products = []
-    all_variants = []  # Store all variants for inventory generation
+    all_variants = []
     
     if not manufacturer_ids:
         print("No manufacturers found. Please generate manufacturers first.")
@@ -45,16 +43,13 @@ def generate_products(count, manufacturer_ids):
         template = PRODUCT_TEMPLATES[i % len(PRODUCT_TEMPLATES)]
         product_name, description, colors = template
         
-        # Select manufacturer
         manufacturer_id = random.choice(manufacturer_ids)
         manufacturer_doc = db.manufacturers.find_one({"_id": manufacturer_id})
         manufacturer_name = manufacturer_doc["name"] if manufacturer_doc else "Unknown"
         
-        # Select 1-3 categories
         num_categories = random.randint(1, 3)
         categories = random.sample(CATEGORIES, k=num_categories)
         
-        # Generate variants (1-4 per product)
         num_variants = random.randint(1, 4)
         variants = []
         
@@ -76,15 +71,13 @@ def generate_products(count, manufacturer_ids):
                 "inventory_type": inventory_type
             }
             
-            # Add promotion for some variants (20% chance)
             if random.random() < 0.2:
-                # Promotion will be added later when promotions are generated
                 pass
             
             variants.append(variant)
             all_variants.append({
                 "variant_id": variant_id,
-                "product_id": None,  # Will be set after product creation
+                "product_id": None,
                 "inventory_type": inventory_type
             })
         
@@ -106,14 +99,13 @@ def generate_products(count, manufacturer_ids):
             "variants": variants
         }
         
-        # Update variant product_id references
         for variant_info in all_variants[-num_variants:]:
             variant_info["product_id"] = product["_id"]
         
         products.append(product)
     
     if products:
-        db.products.insert_many(products)
+        insert_in_batches(db.products, products, batch_size=2000)
         print(f"Generated {len(products)} products with {sum(len(p['variants']) for p in products)} variants")
         return [p["_id"] for p in products], all_variants
     return [], []
