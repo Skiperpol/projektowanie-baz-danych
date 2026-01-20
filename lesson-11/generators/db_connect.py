@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 
 MONGO_URI = "mongodb://localhost:27017/"
-DB_NAME = "shopdbv2"
+DB_NAME = "projektowanie-mongodb"
 
 def get_db():
     client = MongoClient(MONGO_URI)
