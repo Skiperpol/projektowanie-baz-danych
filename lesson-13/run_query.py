@@ -8,7 +8,6 @@ from queries_mongodb import QUERIES_MONGODB
 import copy
 
 
-# Rekurencyjna zamiana {param} na value w całym pipeline
 def replace_params(obj, params):
     if isinstance(obj, dict):
         return {k: replace_params(v, params) for k, v in obj.items()}
