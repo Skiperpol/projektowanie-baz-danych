@@ -8,7 +8,6 @@ from queries_mongodb import QUERIES_MONGODB
 import copy
 
 
-# Rekurencyjna zamiana {param} na value w całym pipeline
 def replace_params(obj, params):
     if isinstance(obj, dict):
         return {k: replace_params(v, params) for k, v in obj.items()}
@@ -47,7 +46,7 @@ if __name__ == "__main__":
             11: 'orders', 12: 'manufacturers', 13: 'promotions', 14: 'carts', 15: 'products',
             16: 'orders', 17: 'orders', 18: 'products', 19: 'carts', 20: 'products',
             21: 'user_favorites', 22: 'inventory_bulk', 23: 'products', 24: 'orders', 25: 'products',
-            26: 'products', 27: 'orders', 28: 'orders', 29: 'orders'
+            26: 'products', 27: 'orders', 28: 'orders'
         }
         if qnum in default_collections:
             collection = default_collections[qnum]

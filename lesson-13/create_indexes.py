@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 
 client = MongoClient("mongodb://localhost:27017/")
-db = client["shopdbv2"]
+db = client["projektowanie-mongodb"]
 
 db.orders.create_index([("user_id", 1)])
 db.orders.create_index([("order_date", 1)])

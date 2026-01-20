@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS "User" (
 	"last_name" VARCHAR(60) NOT NULL,
 	"email" VARCHAR(255) NOT NULL,
 	"password" VARCHAR(255) NOT NULL,
-	"role" ROLE_TYPE NOT NULL,
+	"role" role_type NOT NULL,
 	"address_id" INTEGER,
 	PRIMARY KEY("id")
 );
