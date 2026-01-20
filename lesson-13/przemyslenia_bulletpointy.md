@@ -40,14 +40,11 @@ Warstwa aplikacji będzie musiała tutaj decydować kiedy użyć PostgreSQL, a k
 ## 2. Spójność międzybazowa
 Aplikacja będzie tu odpowiadać za kolejność operacji (na przykład zapis danych historycznych do MongoDB po złożeniu zamówienia [obsłużonego w PostgreSQL]) oraz za obsługę potencjalnych błędów i na przykład ponawianie operacji.
 
-## 3. Mapowanie modeli domenowych
-Mapowanie tabel relacyjnych na encje domenowe i dokumenty MongoDB, ponieważ każda warstwa inaczej reprezentuje dane, z których korzysta.
+## 3. Mapowanie modeli domenowych i agregacja danych
+Mapowanie tabel relacyjnych na encje domenowe i dokumenty MongoDB, ponieważ każda warstwa inaczej reprezentuje dane, z których korzysta. Dzięki temu może tworzyć spójny ViewModel na podstawie połączenia danych z obu baz danych (zależnie od zapytania od użytkownika).
 
 ## 4. Autoryzacja i kontrola dostępu
 Typowa rola aplikacji.
 
-## 5. Agregacja danych
-Tworzenie spójnego ViewModelu na podstawie połączenia danych z obu baz danych (zależnie od zapytania od użytkownika).
-
-## 6. Walidacja reguł
+## 5. Walidacja reguł
 Typowa rola aplikacji.
